@@ -1,2 +1,2 @@
-# lrn_django_api_01
+# lrn_django_api
 django api recipe project london app
