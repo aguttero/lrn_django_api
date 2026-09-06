@@ -31,10 +31,19 @@ after cloning the github repo
 1. generate requirements.txt
   Python version
   djangorestframework
+  for this excerise:
+  Django>=3.2.4,<3.3
+  djangorestframework>=3.12.4,<3.13
   
 2. create file: 'dockerfile' in root
-
+* see dockerfile in project for full detail in commands
+*FROM python:3.9-alpine3.13 alpine is a light unix version recommended for Docker, bare minimal very few dependencies
+* ENV PYTHONUNBUFFERED 1 (to see messages in console without delay)
+* Expose 8000 -> let us connect to python dev server running in docker  
 
 
 ## TDD Test Driven Development
 Create test first, develop logic after
+
+## TLS Certificate - Let's Encrypt
+TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
