@@ -84,8 +84,9 @@ docker build .
 ### 5. Create Docker Compose file (.yml)
 
 #### 1. Write the file:
+modern 2026 09: file name: compose.yaml instead of docker-compose.yml
 ```bash
-version: "3.9" # -> Version of the Docker compose syntax
+version: "3.9" # -> Version of the Docker compose syntax [getting warning that is obsolete] -> 2026 09 modern way follows Compose Specification and does not use VERSION attribute
 
 services: # Main services section
   app: # app related parameters
@@ -101,8 +102,55 @@ services: # Main services section
 
 #### 2. Build the file
 bash: docker-compose build -> runs this and follows steps from 'dockerfile'
+In this case would create the same image as in point 4 (docker build .), but using the .yml as reference and adding info to the image name
+
+### 5 Linting
+#### Setup
+You don't want to add packages in production that are only needed in dev server so:
+* add flake8 to dev server
+  1. create requirements.dev.txt file
+    flake8>=3.9.2,<3.10
+  2. in compose.yaml add:
+    servies > app > build > args: > - DEV=true **true and false in lowercaps**
+  4. in dockerfile add:
+    COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+    ARG DEV=false > overrides to TRUE in reqs.dev
+  5.in dockerfile add: 
+    Add to RUN a conditional if shell command scritp: 
+    If DEV = true > is going to install the dev dependencies
+    **in shell commands spaces between [] are imoportant see[ $DEV = "true" ]**
+      ```sh script
+      if [ $DEV = "true" ]; \
+           then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
+       fi && \
+    ```
+  6. TEST to see if syntax is ok
+      bash run: docker-compose build
+
+  7. Add configuration file for Flake 8
+    exclude > only run linting on code we created
+    create app/.flake8 file
+
+  8. run flake8 to test it runs ok 
+    **should not generate errors as we did not create any code yet**
+    run it through Docker Compose:
+    bash: docker-compose run --rm app sh -c "flake8"
+    2026 09 modern: bash: docker compose --rm app sh -c "flake8"
+
+### 6 Create Django project in docker image
+```bash
+docker-compose run --rm app sh -c "django-admin startproject app ."
+```
+It adds an app folder inside the local project_name/app folder with the django project.
+The local folder is linked [bind] to the docker folder by the volumes: parameter in the compose.yaml file
 
 
+
+
+### 6 Testing
+Django Test Suite
+
+bash: docker-compose run --rm app sh -c "python manage.py test"
 
 ## TDD Test Driven Development
 Create test first, develop logic after
