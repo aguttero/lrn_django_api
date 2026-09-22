@@ -26,7 +26,7 @@ i.e: docker-compose run --rm app sh -c "python manage.py collecstatic"
 app (name of the app)
 sh - c passes in a shell command // command: "python manage.py collecstatic"
 
-## In the Code Editor
+## Setup In the Code Editor
 after cloning the github repo
 
 ### 1. generate requirements.txt
@@ -96,7 +96,7 @@ services: # Main services section
       - "8000:8000" # maps 8000 in local machine to port 8000 in docker container this is how to access the network when wan't to connect to the server image that is running
     volumes:
       - ./app:/app # Mapping directories in our system into docker container. To be able to update the local code changes into the app running in the docker conntainer in real time. Avoids having to rebuild the image with every code update
-    command: >
+    command: > # The '>' avoids quoting hell and allows to split the single command line into multiple lines for easier readability
       sh -c "python manage.py runserver 0.0.0.0:8000" # command used to run the services: we can override when manually executing docker compose run commnand [by default runs this command: in compose file if there is no command specified in the bash: docker compose run <command> command ]
 ```
 
@@ -158,7 +158,7 @@ in console should see ping update
    detach > bash: docker compose down
    or > Ctrl + C
 
-## GitHub Actions
+## Setup GitHub Actions
 Common use case automations:
 * Deployment -> In a separate Udemy Training
 * Code linting
@@ -245,14 +245,142 @@ https://www.udemy.com/course/django-python-advanced/learn/lecture/32238778#quest
 
       - https://github.com/marketplace/actions/checkout
 
-
-### 6 Testing
-Django Test Suite
-
-bash: docker-compose run --rm app sh -c "python manage.py test"
-
 ## TDD Test Driven Development
 Create test first, develop logic after
+
+### Testing in Django - See Udemy Overview Session 27
+https://docs.djangoproject.com/en/6.1/topics/testing/
+#### Framework tools:
+Django Test Suite / Framework -> Based on the ´unittest´ library + django features
+  * Test client - dummy web browser
+  * Simulate authentication
+  * temporary database
+Django REST Frameworks also adds features
+  * API test client
+
+#### Test location
+choose either: (can't use both)
+  * tests.py added in each subapp
+  * tests/ directory in main app
+    * test modules start with test_
+    * test directories must contain __init__.py file
+
+#### Test Database
+* Django creates a DB for tests and clears data for every single test by default (is possible to override if needed i.e. a specific dataset)
+
+#### Test Clases provided by Django
+* SimpleTestCase -> No DB integration -> useful when DB not needed -> saves time
+* TestCase -> requires DB
+```python
+from django.test import SimpleTestCase
+from django.test import TestCase
+from subapp import views (where code to test resides)
+```
+##### steps
+1. import test class
+2. import objects to test
+3. define test class
+4. add test method -> def test_mmmmmm
+5. setup inputs (values, edge cases)
+6. execute code to be tested
+7. check output
+
+bash: python manage.py test
+bash: docker-compose run --rm app sh -c "python manage.py test"
+
+### Mocking
+Override or change behaviour of dependencies for test purposes
+  To avoid unintended side effects
+  Isolate code being tested
+
+Why:
+Avoid relying on external services
+Avoid unintended consequences (ie send emails)
+Speed up tests
+
+How:
+use uniitest.mock library
+  MagicMock / Mock class - Replace real objects
+  patch - Overrides code in tests
+
+### Testing Web requests - see code for examples
+uses django REST Framework APIClient
+```python
+from rest_framework.test import APIClient
+```
+* based on django TestClient
+* Make requests
+* Check result
+* Override authentication
+
+### Common test issues
+* __init__.py in test dir
+* indentation
+* Missing test_ prefix for method
+* ImportError -> tests.py and /tests dir
+
+## PostgreSQL DB Configuration
+### Architecture
+Docker Compose
+  Serv1: App -> depends_on DB service
+  Serv2 : DataBase
+
+Network
+
+Volumes
+* Maps a directory in container to a dir in local machine
+
+### Setup in yml file - Session 34
+DB_HOST=[db_serv_name] 'should match the service name for the db service image
+ie:
+  db:
+    image: docker db image
+
+DB_HOST=db
+
+#### to test it:
+bash: docker compose up
+
+## Django DB configuration - Session 35
+### Setup info needed in settings.py
+Pull config values from env variables:
+os.environ.get ('DB_HOST')
+  Engine
+  Hostname (ip or domain name for DB)
+  Port number (default PostgreSQL 5432)
+  Database Name
+  Username
+  Password
+### Posgtres adapter for Django
+Psycopg2 - will be deprecated -> use psycopg (3.1.12+)
+psycopg2-binary (only good for dev, avoid for production)
+ZAG: validate dependencies for psyscopg psycopg (3.1.12+)
+#### psycopg2 dependencies: (udemy tutorial)
+  C compiler
+  python3-dev
+  libpq-dev
+equivalent packages por Alpine (trial and error / stackflow)
+  postgresql-client
+  build-base
+  postgresql-dev
+  musl-dev
+
+Good Practice: delete packages that were needed for installation, but are not needed anymore for running
+
+#### edit to setup postgres adapter psycopg2 in docker and Alpine image
+dockerfile
+requirements.txt
+see session 35 in udemy
+bash: docker compose build
+Validate it builds ok (no errors)
+
+
+  
+PostgreSQL connection settings:
+https://docs.djangoproject.com/en/6.1/ref/databases/#postgresql-notes
+
+
+
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
