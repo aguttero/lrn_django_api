@@ -211,6 +211,28 @@ if any of the steps fails it will return a code other than Zero
 
 Docker compose and docker install are already preinstalled in ubuntu-24-04 runner
 
+#### Errors ! [remote rejected] refusing to allow a Personal Access Token to create or update workflow `.github/workflows/checks.yml` without `workflow` scope
+
+You are getting this error because GitHub blocks your Personal Access Token (PAT) from modifying GitHub Actions workflow files unless it has been explicitly granted permission to do so.
+
+Reco: 
+sol 0: Use SSH Keys
+sol 1: using fine-grained token
+sol 2: using classic token
+
+Docs:
+Add a PAT:
+https://stackoverflow.com/questions/68811838/refusing-to-allow-a-personal-access-token-to-create-or-update-workflow
+
+Connect with SSH
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh
+
+Udemy session 26 help:
+https://www.udemy.com/course/django-python-advanced/learn/lecture/32238778#questions/21530138
+
+
+
+
 #### Confgure dockerhub credentials in GitHub
 * add, commit and push git files
 * validate in repo > actions that there is a workflow
