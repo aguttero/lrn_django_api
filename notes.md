@@ -213,8 +213,8 @@ Docker compose and docker install are already preinstalled in ubuntu-24-04 runne
 
 #### Confgure dockerhub credentials in GitHub
 * add, commit and push git files
-* go to GitHub Repo
-* click actions
+* validate in repo > actions that there is a workflow
+
 
 
 
