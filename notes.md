@@ -5,6 +5,9 @@ docker compose up
 in browser: http://localhost:8000/ or 127.0.0.1:8000
 docker compose down
 
+or:
+python manage.py runserver 0.0.0.0:8000 in docker container to see initial empty django dev server home screen
+
 ## Test
 bash: docker-compose run --rm app sh -c "python manage.py test -v 2"
 
@@ -443,6 +446,8 @@ create tests/ and __init__.py
 bash: python manage.py makemigrations
 bash: python manage.py migrate
 Run after wait_for_db - if there is no new migrations it just moves forward
+Added migrate to Docker compose so it runs migrations after waiting for db to start
+Added wait_for_db to checks.yml so it also waits for DB ready before running tests
 
 
 
