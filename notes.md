@@ -288,6 +288,18 @@ from subapp import views (where code to test resides)
 bash: python manage.py test
 bash: docker-compose run --rm app sh -c "python manage.py test"
 
+##### Verbose Test
+
+
+bash: python manage.py test -v 2
+bash: docker-compose run --rm app sh -c "python manage.py test -v 2"
+
+The Verbosity Levels Explained
+-v 0 (Silent): Minimal output. It hides everything except errors, critical failures, and the final summary.
+-v 1 (Normal): The default mode. It displays simple dots (.) for success, F for failures, and E for errors.
+-v 2 (Verbose): This is what you want. It prints the names of all tests being executed, along with setup notifications (like creating the test database).
+-v 3 (Debug): Ultra-verbose. It shows absolutely everything from level 2 plus internal debug logs, raw SQL queries being executed, and mock server initializations.
+
 ### Mocking
 Override or change behaviour of dependencies for test purposes
   To avoid unintended side effects
@@ -374,13 +386,41 @@ see session 35 in udemy
 bash: docker compose build
 Validate it builds ok (no errors)
 
-
-  
+### Django db config in settings.py  - Session 37
 PostgreSQL connection settings:
 https://docs.djangoproject.com/en/6.1/ref/databases/#postgresql-notes
 
+udemy django v3:
+import os
 
+change default database from sqlite3 to Postgres -- see code
 
+### fixing database race condition in docker - Session 38
+ZAG: Validate how to do this in django v6
+https://docs.djangoproject.com/en/3.2/howto/custom-management-commands/
+
+add to django a wait for db ready custom django command (in core app) so that it starts just after the DB is ready so that Django does not crash in the startup process.
+
+#### Core app creation django v3 - Session 39
+* create core app
+bash: docker-compose run --rm app sh -c "python manage.py startapp core"
+delete uneeded files in core/
+  - views.py
+  - tests.py
+create tests/ and __init__.py
+
+* add core to settings.py installed apps list
+
+* add core/management/commands/wait_for_db.py - Session 40
+* add __init__.py to all subdirs
+
+#### TDD process: Session 40
+0. build empty command
+1. build empty unitest
+2. fail unitest to prove that testing process work
+3. code test to validate command
+4. code command
+5. test command
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
