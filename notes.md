@@ -1,5 +1,16 @@
 # notes in lrn_django_01 -> django_notes.md
 # to run project
+## start and stop docker container, services and network
+docker compose up
+in browser: http://localhost:8000/ or 127.0.0.1:8000
+docker compose down
+
+## Test
+bash: docker-compose run --rm app sh -c "python manage.py test -v 2"
+
+## validate django web browser running
+
+
 
 
 # API COURSE - London App Developer -Build a backend REST API
@@ -138,6 +149,11 @@ You don't want to add packages in production that are only needed in dev server 
     2026 09 modern: bash: docker compose --rm app sh -c "flake8"
     * if you see no errors then it means it is ok
 
+#### correcting some linting errors (example from post fix db race condition)
+docker-compose run --rm app sh -c "python manage.py <wait_for_db> && flake8"
+* F401 'django.contrib.admin' imported but unused -> add # noqa to have it ignored by flake8
+
+
 ### 6 Create Django project in docker image
 ```bash
 docker-compose run --rm app sh -c "django-admin startproject app ."
@@ -172,6 +188,7 @@ Result -> Success / Fail
 2000 Free minutes/month
 
 ### Github Actions Configuration
+/Users/alejandroguttero/code_imac/lrn_django_api/app/app/tests.py
 * create config file at: .github/workflows/[checks].yml [workflows/<any_name>.yml]
 * set triggers
 * Add steps for running testing and linting
@@ -236,12 +253,6 @@ https://www.udemy.com/course/django-python-advanced/learn/lecture/32238778#quest
 #### Confgure dockerhub credentials in GitHub
 * add, commit and push git files
 * validate in repo > actions that there is a workflow
-
-
-
-
-        
-
 
       - https://github.com/marketplace/actions/checkout
 
@@ -401,6 +412,12 @@ https://docs.djangoproject.com/en/3.2/howto/custom-management-commands/
 
 add to django a wait for db ready custom django command (in core app) so that it starts just after the DB is ready so that Django does not crash in the startup process.
 
+test wait_for_db command:
+bash: docker-compose run --rm app sh -c "python manage.py wait_for_db"
+
+test and lint:
+bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && flake8"
+
 #### Core app creation django v3 - Session 39
 * create core app
 bash: docker-compose run --rm app sh -c "python manage.py startapp core"
@@ -414,13 +431,20 @@ create tests/ and __init__.py
 * add core/management/commands/wait_for_db.py - Session 40
 * add __init__.py to all subdirs
 
-#### TDD process: Session 40
+#### TDD process: Session 40 for test_commands.py & wait_for_db.py
 0. build empty command
 1. build empty unitest
 2. fail unitest to prove that testing process work
 3. code test to validate command
 4. code command
 5. test command
+
+### Database Migration
+bash: python manage.py makemigrations
+bash: python manage.py migrate
+Run after wait_for_db - if there is no new migrations it just moves forward
+
+
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
