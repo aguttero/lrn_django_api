@@ -498,8 +498,21 @@ Added wait_for_db to checks.yml so it also waits for DB ready before running tes
 
 ##### s48 models.py
 - core/models.py
-- 
-
+- modify settings.py
+  - At bottom of file add: AUTH_USER_MODEL = 'core.User'
+- make migrations
+  - bash: docker-compose run --rm app sh -c "python manage.py makemigrations"
+  - check that core/migrations/0001_initial.py is created
+- run migrate
+  1. if already run migrate before: error -> Exception: Inconsisten Migration history
+  2. Need to clear the volume first to erase existing DB
+    - docker volume ls
+    - find: lrn_django_api_dev-db-data
+    - delete: docker volume rm lrn_django_api_dev-db-data
+    - if error volume in use: bash: docker compose down to shut down container and volume
+  3. run directly this step if migration has never been run before. Otherwise go to step 1
+    - bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py migrate"
+    - chek that migrations run ok
 
 ### How to clear Migrations
 
