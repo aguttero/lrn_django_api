@@ -497,6 +497,7 @@ Added wait_for_db to checks.yml so it also waits for DB ready before running tes
   - first test run fails: missing pos arg 'username' (which is in default django user model) - ok
 
 ##### s48 models.py
+Steps:
 - core/models.py
 - modify settings.py
   - At bottom of file add: AUTH_USER_MODEL = 'core.User'
@@ -512,7 +513,35 @@ Added wait_for_db to checks.yml so it also waits for DB ready before running tes
     - if error volume in use: bash: docker compose down to shut down container and volume
   3. run directly this step if migration has never been run before. Otherwise go to step 1
     - bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py migrate"
-    - chek that migrations run ok
+    - chek that migrations run ok - core.0001_initial should be in the list
+  - run test:
+    - bash: docker-compose run --rm app sh -c "python manage.py test -v 2"
+
+##### s49 feature to normalize user email
+1. core/tests/test_models.py > code to test normalization
+2. test the test to see it fails
+    bash: docker-compose run --rm app sh -c "python manage.py test"
+3. add email=self.normalize_email(email) to core/models.py
+
+##### s50 feature to require emsil address
+1. core/tests/test_models.py > code to test required
+2. test the test to see it fails
+  bash: docker-compose run --rm app sh -c "python manage.py test"
+3. add code if not email: raise ValueError('email required') to core/models.py
+  
+##### s51 add feature superuser functionality
+similar to s50
+
+##### s52 Test user model
+steps:
+1. docker compose up
+2. localhost:8000
+3. localhost:8000/admin
+4. bash: docker-compose run --rm app sh -c "python manage.py createsuperuser"
+5. email -> admin@example.com / pass -> p underscore 123
+6. If you forget user, need to clear DB or run createsuperuser
+if it runs ok: username should be email - credential email + pass
+
 
 ### How to clear Migrations
 
