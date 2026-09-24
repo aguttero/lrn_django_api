@@ -420,6 +420,84 @@ bash: docker-compose run --rm app sh -c "python manage.py wait_for_db"
 
 test and lint:
 bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && flake8"
+bash: flake8 .
+2026 Modern Tool -> Ruff (does not have dependencies)
+ZAG -> Validate how to setup RUFF instead of flake8 for alpine
+##### RUFF Setup
+*setup
+  - pip install ruff
+  - ruff check .
+  - ruff check --fix . (auto fix lint and formatting)
+
+*exclude
+```toml
+[tool.ruff]
+# Files and directories that Ruff should completely ignore
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    "*/migrations/*",  # Excludes all Django auto-generated migration files
+]
+# Optional: You can also specify your line length rule here
+line-length = 119
+```
+option 2 - standalone ruff.toml
+```toml
+# Files and directories that Ruff should completely ignore
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    "*/migrations/*",
+]
+
+line-length = 119
+```
+##### RUFF in DOCKER ALPINE
+ZAG: validate how to install in docker image of alpine linux
+Gemini:
+To install Ruff inside an Alpine Linux docker image, you can use pip install ruff just like any other Python package.However, because Alpine uses a lightweight C library (musl instead of glibc), Python packages with compiled binaries (like Ruff, which is written in Rust) historically required heavy build tools to compile from source. Fortunately, the Ruff team now publishes pre-compiled musllinux wheels, meaning it installs almost instantly without needing a full Rust compiler in your container.Here are the two ways to set it up in your Dockerfile:
+
+1. Option 1: The Modern & Clean Way (Using pip)Simply add ruff to your requirements.txt file or install it directly in your Dockerfile.
+```dockerfile
+FROM python:3.11-alpine3.19
+
+# Upgrade pip to ensure it can find the modern musllinux wheels
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install ruff (it will automatically download the pre-compiled Alpine wheel)
+RUN pip install --no-cache-dir ruff
+
+# ... the rest of your Django setup
+```
+2. Option 2: The Multi-Stage Way (Best for keeping production images tiny)If you only want Ruff during development or testing and want to keep your final production image as small as possible, you can copy the pre-built binary directly from Ruff's official Docker image:
+
+```dockerfile
+FROM python:3.11-alpine3.19
+
+# Copy the pre-compiled ruff binary straight into your path
+COPY --from=ghcr.io/astral-sh/ruff:latest /ruff /usr/local/bin/ruff
+
+# Now you can run 'ruff' anywhere in this container without installing it via pip!
+```
+
+3. 
+A Common Gotcha for Junior Devs on Alpine ⚠️If your project uses older Python packages that don't have modern Alpine wheels, your build might freeze or fail because it's trying to compile from source. If that happens, you need to temporarily install Alpine's build essentials before running pip install:
+
+```dockerfile
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libffi-dev \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apk del .build-deps
+``
+(Since Ruff has native musl support, you won't need this block just for Ruff [1]—but keep it in mind for your other Django dependencies!)
+
 
 #### Core app creation django v3 - Session 39
 * create core app
