@@ -449,6 +449,59 @@ Run after wait_for_db - if there is no new migrations it just moves forward
 Added migrate to Docker compose so it runs migrations after waiting for db to start
 Added wait_for_db to checks.yml so it also waits for DB ready before running tests
 
+## Django User model config - custom - Session 45
+*default user model 
+  - uses username instead of email
+  - not easy to customise
+* Reco: 
+  - create a custom model for new projects
+  - set custom model before running migrations
+  - Base on AbstractBaseUser and PermissionsMixin Classes
+
+* Common issues:
+  - Run migrations before setting custom model
+  - Typos in config (settings.py, etc)
+  - Indentation in manager or model
+
+* Steps:
+  - Create model (AbstractBaseUser + PermissionsMixin Classes)
+  - Create custom manager
+  - Set AUTH_USER_MODE in settings.py
+  - create and run migrations
+
+### Design - fields
+* user model:
+  - email (EmailField)
+  - name (CharField)
+  - is_active (BooleanField)
+  - is_staff (BooleanField)
+
+* user model manager:
+  - used to manage objects
+  - Custom logic for creating object
+    - hash password
+  - used by django CLI
+    - create superuser
+
+* BaseUserManager (default that comes from django)
+  - useful helper methods
+    - normalize_emails
+  - Methods to define ourselves
+    - create_user
+    - create_superuser
+
+#### Code
+##### s47 test_models.py
+- core/tests/test_models.py
+- test: bash: docker-compose run --rm app sh -c "python manage.py test -v 2"
+  - first test run fails: missing pos arg 'username' (which is in default django user model) - ok
+
+##### s48 models.py
+- core/models.py
+- 
+
+
+### How to clear Migrations
 
 
 ## TLS Certificate - Let's Encrypt
