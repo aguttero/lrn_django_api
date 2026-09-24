@@ -10,8 +10,6 @@ from django.contrib.auth.models import (
 from django.db import models
 
 # Create your models here.
-# check method checks if the DB is active -@patch mocks the db behaviour check method checks if the DB is active -@patch mocks the db behaviour
-
 
 
 class UserManager(BaseUserManager):

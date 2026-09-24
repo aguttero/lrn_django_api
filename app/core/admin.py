@@ -1,3 +1,50 @@
-from django.contrib import admin  # noqa
+"""
+Django admin customization.
+"""
+# from django.contrib import admin  # noqa
+
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.translation import gettext_lazy as _
+
+# rename to BaseUserAdmin to avoid conflicts with django UserAdmin
+from core import models
 
 # Register your models here.
+
+
+class UserAdmin(BaseUserAdmin):
+    """Define the admin pages for users."""
+
+    ordering = ["id"]
+    list_filter = ("email", "name")
+    list_display = ["email", "name", "is_staff", "is_active", "is_superuser"]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "email",
+                    "password",
+                )
+            },
+        ),
+        (_("Personal Info"), {"fields": ("name",)}),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                )
+            },
+        ),
+        (_("Important dates"), {"fields": ("last_login",)}),
+    )
+    readonly_fields = ["last_login"]
+
+
+admin.site.register(models.User, UserAdmin)
+# we need to specify ,UserAdmin) so that it picks the page
+# display class we defined, otherwise it uses the default

@@ -418,12 +418,33 @@ add to django a wait for db ready custom django command (in core app) so that it
 test wait_for_db command:
 bash: docker-compose run --rm app sh -c "python manage.py wait_for_db"
 
-test and lint:
+#### Core app creation django v3 - Session 39
+* create core app
+bash: docker-compose run --rm app sh -c "python manage.py startapp core"
+delete uneeded files in core/
+  - views.py
+  - tests.py
+create tests/ and __init__.py
+
+* add core to settings.py installed apps list
+
+* add core/management/commands/wait_for_db.py - Session 40
+* add __init__.py to all subdirs
+
+#### TDD process: Session 40 for test_commands.py & wait_for_db.py
+0. build empty command
+1. build empty unitest
+2. fail unitest to prove that testing process work
+3. code test to validate command
+4. code command
+5. test command
+
+## test and lint:
 bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && flake8"
 bash: flake8 .
 2026 Modern Tool -> Ruff (does not have dependencies)
 ZAG -> Validate how to setup RUFF instead of flake8 for alpine
-##### RUFF Setup
+### RUFF Setup
 *setup
   - pip install ruff
   - ruff check .
@@ -460,12 +481,14 @@ exclude = [
 
 line-length = 119
 ```
-##### RUFF in DOCKER ALPINE
+
+#### RUFF in DOCKER ALPINE
 ZAG: validate how to install in docker image of alpine linux
 Gemini:
 To install Ruff inside an Alpine Linux docker image, you can use pip install ruff just like any other Python package.However, because Alpine uses a lightweight C library (musl instead of glibc), Python packages with compiled binaries (like Ruff, which is written in Rust) historically required heavy build tools to compile from source. Fortunately, the Ruff team now publishes pre-compiled musllinux wheels, meaning it installs almost instantly without needing a full Rust compiler in your container.Here are the two ways to set it up in your Dockerfile:
 
 1. Option 1: The Modern & Clean Way (Using pip)Simply add ruff to your requirements.txt file or install it directly in your Dockerfile.
+
 ```dockerfile
 FROM python:3.11-alpine3.19
 
@@ -477,6 +500,7 @@ RUN pip install --no-cache-dir ruff
 
 # ... the rest of your Django setup
 ```
+
 2. Option 2: The Multi-Stage Way (Best for keeping production images tiny)If you only want Ruff during development or testing and want to keep your final production image as small as possible, you can copy the pre-built binary directly from Ruff's official Docker image:
 
 ```dockerfile
@@ -495,30 +519,8 @@ A Common Gotcha for Junior Devs on Alpine ⚠️If your project uses older Pytho
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libffi-dev \
     && pip install --no-cache-dir -r requirements.txt \
     && apk del .build-deps
-``
+```
 (Since Ruff has native musl support, you won't need this block just for Ruff [1]—but keep it in mind for your other Django dependencies!)
-
-
-#### Core app creation django v3 - Session 39
-* create core app
-bash: docker-compose run --rm app sh -c "python manage.py startapp core"
-delete uneeded files in core/
-  - views.py
-  - tests.py
-create tests/ and __init__.py
-
-* add core to settings.py installed apps list
-
-* add core/management/commands/wait_for_db.py - Session 40
-* add __init__.py to all subdirs
-
-#### TDD process: Session 40 for test_commands.py & wait_for_db.py
-0. build empty command
-1. build empty unitest
-2. fail unitest to prove that testing process work
-3. code test to validate command
-4. code command
-5. test command
 
 ### Database Migration
 bash: python manage.py makemigrations
@@ -620,8 +622,38 @@ steps:
 6. If you forget user, need to clear DB or run createsuperuser
 if it runs ok: username should be email - credential email + pass
 
+## Django Admin setup - Section 10
 
-### How to clear Migrations
+### Config
+1. enable per model in admin.py
+  - fieldset
+  - Readorder
+  - field display
+  - Readonly field, etc
+
+### Code Setup
+* core/tests/test_admin.py - session 55
+1. setUp() - modules required for unittest setup for admin - exception with camelCase
+2. test_user_lists
+3. test that test fails; python manage.py test core.tests.test_admin
+
+* list the users - session 56
+* core/admin.py
+reverse > admin:core_user_changelist
+
+*edit_user_page - session 57 # Need to fix it as we changed the username as key user id field for user email
+* core/admin.py
+reverse > admin:core_user_change
+3. click in user email to go to edit user page
+4. Get FieldError at /admin/core/user/1/change 1>user.id
+5. test the test should generate the same error 'FieldError'
+6. code customization to UserAdmin model to support model without username
+  - fieldsets = (..  )  see in code -> overrides 'username' which does not exist
+  - from django.utils.translation import gettext_lazy as _
+    This integrates with django translation system so _ translates the text // Good practice if in the future need to translate pages
+    We need it to translate the values and create section titles for the data groups of the edit user page (Personal Info, Permissions, Important dates, None)
+
+  *add user page - Session 58
 
 
 ## TLS Certificate - Let's Encrypt
