@@ -177,6 +177,17 @@ in console should see ping update
    detach > bash: docker compose down
    or > Ctrl + C
 
+### To setup a second device
+1. install docker desktop
+2. clone project > git clone
+3. replicate .env files
+4. build and start containers > docker compose up --build
+5. check no errors - check django is running
+6. check or run migrations (see log info in docker desktop)
+7. if needed clear the DV volume and manually re run migrations (see s48 down in .md)
+8. Create django super_user (see s52 down in .md)
+  -  bash: docker-compose run --rm app sh -c "python manage.py createsuperuser"
+
 ## Setup GitHub Actions
 Common use case automations:
 * Deployment -> In a separate Udemy Training
@@ -635,7 +646,8 @@ if it runs ok: username should be email - credential email + pass
 * core/tests/test_admin.py - session 55
 1. setUp() - modules required for unittest setup for admin - exception with camelCase
 2. test_user_lists
-3. test that test fails; python manage.py test core.tests.test_admin
+3. test that test fails; python manage.py test 
+3. or to test specific module use dot notation: python manage.py test core.tests.test_admin 
 
 * list the users - session 56
 * core/admin.py
@@ -654,6 +666,8 @@ reverse > admin:core_user_change
     We need it to translate the values and create section titles for the data groups of the edit user page (Personal Info, Permissions, Important dates, None)
 
   *add user page - Session 58
+  similar to previous
+  
 
 
 ## TLS Certificate - Let's Encrypt
