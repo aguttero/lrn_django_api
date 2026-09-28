@@ -668,7 +668,91 @@ reverse > admin:core_user_change
   *add user page - Session 58
   similar to previous
   
+## API Documentation Section 11 s59
+need to document:
+- Endpoints
+- Supported methods (Get, Post, Put, Patch, Delete)
+- Payload format (inputs)
+  - parameters
+  - Json Content format
+- Response format (output)
+- Authentication process
 
+### Options to create documentation
+* Manual
+  - Word Doc
+  - Markdown
+* Automated
+  - use metadata from code
+  - Automate generation of docs
+  - Tools:
+    - DRF Django Rest Framework
+
+#### Tools / Libraries
+* DRF Django Rest Framework
+  - drf-spectacular - OpenAPI 3.0 ok 2026
+    - important to name with doc strings the code as is the base to 
+    - Generate Schema file
+    - Parse the schema to GUI
+  - serve swagger with API
+  - modern way (use built-in template views)?
+    - drf-spectacular render Swagger UI and ReDoc natively
+    - Expose 3 endpoints
+      - Raw YAML/JSON schema
+      - Interactive swagger UI
+      - clean ReDoc reader
+
+#### Tool setup
+* drf-spectacular
+  - add to reqs.txt
+  - re build container: docker-compose build
+  - check for errors, validate with pio list
+  - configure in settings.py
+    - INSTALLED_APPS > 
+      - 'rest_framework'
+      - 'drf_spectacular'
+    - ADD TO BOTTOM > defines to django the schema to use
+      - REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',}
+  - cofigure app/urls.py > see code import and config paths:
+    - from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+## Build User API -Section 12 s64
+### API functions:
+- User registration
+- Creating Auth Token
+- Viewing/updating profile
+
+### Code Setup
+- user/create
+  - POST register new user
+- user/token
+  - POST > new token (receives userid and pwd returns token )
+- user/me
+  - PUT/PATCH - update user profile
+  - GET - retrieve user profile
+
+#### create new django app for user API
+1. bash or docker compose: python manage.py startapp user
+2. clean up files
+  - migrations > all migrations consolidated in core app
+  - admin > idem
+  - models > idem
+  - tests > create subfolder tests/ (remember to add __init__.py)
+3. in app/settings.py
+  - add user app to INSTALLED APPS
+4. create user endpoint s67
+  - create user/tests/test_user_api.py
+  - validate test fails: python manage.py test user.tests.test_user_api (fails on NoReverseMatch 'user')
+5. Create user serializer: user/serializers.py s68
+  - serializer converts json objects to/from python objects
+  - recives from json, validates type, converts to python object or model in actual DB
+6. Create View that uses the serializer: users/views.py
+7. connect URL to view
+  - create user/urls.py
+  - connect view in app/urls.py (import inlude, add path in urlpatterns)
+
+#### create authentication api s69
+  
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
