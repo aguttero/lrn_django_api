@@ -881,21 +881,35 @@ If you are using DRF’s built-in rest_framework.authtoken, tokens are stored di
 
 DRF expects you to use your login/logout architectural patterns to manage this. However, it takes very few lines of code to write your own custom method and endpoint.
 
-##### Implementation
+##### Implementation - Funciona pero no documenta OK
+ZAG: no documenta automático en swagger (buscar como resolver)
+ZAG: solo devuelve el mensaje de detail como response y status 200 (buscar como devolver el user email??)
+ZAG: Buscar como crear un revoke que un admin pueda aplicar a un usuario determinado.
+ZAG: Crear el unittest
 Create a custom API view that deletes the token tied to the current requesting user.
 
+
 ```python
-# ZAG: BY GEMINI - NOT TESTED yet
+# ZAG: BY GEMINI - TESTED ok
 # views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from drf_spectacular.utils import extend_schema 
 from rest_framework.permissions import IsAuthenticated
 
+@extend_schema(
+    request=None,  # Tells Swagger that no request body / serializer is required
+    responses={200: dict(detail="Successfully logged out. YEAH")}, # Optional: documents the response
+)
+
 class RevokeTokenView(APIView):
-    permission_classes = [IsAuthenticated]
+    """Logout the user by revoking/deleting their auth token."""
+   authentication_classes = [authentication.TokenAuthentication]
+   permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """Delete the token associated with the current authorized user."""
         # request.auth holds the actual Token model instance when using TokenAuthentication
         request.auth.delete()
         return Response({"detail": "Token successfully revoked."}, status=status.HTTP_200_OK)
@@ -912,8 +926,78 @@ urlpatterns = [
 ]
 ```
 
+#### Test code
+In Django REST Framework, the best practice is to test that a valid authenticated request successfully deletes the token, and that trying to access a protected endpoint with that same token afterward correctly returns a 401 Unauthorized status.
+
+```python
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
+
+LOGOUT_URL = reverse('user:logout')  # Change 'user:logout' to match your exact URL namespace/name
+MANAGE_USER_URL = reverse('user:me') # The URL for your ManageUserView
 
 
+class LogoutApiTests(APITestCase):
+    """Test the logout/token revocation API endpoint."""
+
+    def setUp(self):
+        # Create a test user
+        self.user = get_user_model().objects.create_user(
+            email='test@example.com',
+            password='password123',
+            name='Test User'
+        )
+        # Create a database token for this user
+        self.token = Token.objects.create(user=self.user)
+        
+        # Authenticate the API client using standard DRF Token Authentication
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
+    def test_logout_successful(self):
+        """Test that posting to logout endpoint destroys the token."""
+        # Check that the token exists in the database before the request
+        self.assertTrue(Token.objects.filter(key=self.token.key).exists())
+
+        # Make the POST request to logout
+        response = self.client.post(LOGOUT_URL)
+
+        # Assert correct status code and response payload
+        self.assertEqual(response.status_value, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"detail": "Successfully logged out."})
+        
+        # Assert that the token was deleted from the database
+        self.assertFalse(Token.objects.filter(key=self.token.key).exists())
+
+    def test_cannot_access_protected_endpoint_after_logout(self):
+        """Test that the token is invalid for future requests after logout."""
+        # 1. Execute logout
+        self.client.post(LOGOUT_URL)
+
+        # 2. Try to make an authenticated request using the same client credentials
+        response = self.client.get(MANAGE_USER_URL)
+
+        # Assert that access is now denied
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_unauthenticated_fails(self):
+        """Test that unauthenticated requests to logout are blocked."""
+        # Clear credentials to mimic an anonymous user
+        self.client.credentials()
+
+        response = self.client.post(LOGOUT_URL)
+
+        # Assert that the endpoint is protected
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+```
+
+💡 Code Breakdown
+* self.client.credentials: This builds the Authorization: Token <key> header automatically for every request sent by that client instance until cleared.
+* Token.objects.filter(...).exists(): Instead of relying purely on the HTTP status codes, this directly probes your database state to prove the backend target operation occurred safely.
+
+What does your urls.py file look like for the user app? If you haven't mapped the route yet, paste it here so I can give you the exact path syntax that aligns with the reverse() routing lookup names used in the test.
 
 
 ### Code Setup Token API s70
@@ -950,8 +1034,10 @@ urlpatterns = [
 2. swagger: http://localhost:8000/api/docs
 3. Create a user > user > POST
   - can use json format or app/x-form-data
-4 Get Token: "token": "41789257ca8d93cace9f25f9ca6b16c9f95fc870"
+4 Get Token:
 5a9cdfb3c71c588035783644f11ce3214fd96943
+
+
 5. Click Authorize > Token auth:
   - type: Token <token value without quotes> 
 6. test /me endpoint

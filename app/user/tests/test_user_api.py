@@ -183,3 +183,16 @@ class PrivateUserApiTests(TestCase):
         self.assertEqual(self.user.name, payload["name"])
         self.assertTrue(self.user.check_password(payload["password"]))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+#     def test_revoke_token_user(self):
+#         """ Test deleting the token from DB for authenticated user."""
+#         res = self.client.get(ME_URL)
+#
+#         self.assertEqual(res.status_code, status.HTTP_200_OK)
+#         self.assertEqual(
+#             res.data,
+#             {
+#                 "name": self.user.name,
+#                 "email": self.user.email,
+#             },
+#         )
