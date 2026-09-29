@@ -751,8 +751,64 @@ need to document:
   - create user/urls.py
   - connect view in app/urls.py (import inlude, add path in urlpatterns)
 
-#### create authentication api s69
-  
+## create authentication api s69
+### Types of Authentication
+* Basic
+  - Send http auth with every request you make including user name and pwd > bad
+* Token
+  - use a token in the HTTP header for every request
+  - Balance of simplicity and security
+  - OOB support by DRF
+  - support by most clients
+* JWT Json Web token
+  - Access and Refresh Token > More Advanced
+  - Similar to Token (Token in HTTP header for every request)
+  - Requires more libraries / dependencies
+* Session
+  - Use cookies > common for authentication websites
+
+
+#### Token auth how it works
+1. Create token (POST username/password)
+2. Store token on client (Session or Local Storage, Cookie, Database)
+3. Every request to server must include token in http headers
+
+Pros:
+1. Supporte OOB by django
+2. Simple to use
+3. Supporte by all clients
+4. Avoid sending username/password each time
+
+cons:
+1. Token needs to be secure on the client side (risky in a shared device)
+2. Requires a database for the requests (not an issue unless you have to authenticate millions of users)
+
+Logging out
+* happens on the client side
+* deletes the token
+
+Why no logount API endpoint?
+* unreliable (client can't logout if: user deletes the app (while logged in), or erases session cookies or loses internet access)
+* Not useful on API (unless you have a specific use case)
+
+### password encryption setup?
+### token info?
+
+### Code Setup s70
+1. Code the unitest in user/tests/test_user_api.py
+2. Test that test fails to NoReverseMatch (correct any syntax errors in the test if any found in the error message)
+3. Edit app/settings.py - add INSTALLED_APPS 'rest_framework.authtoken' > support for token auth
+4. Edit user/serializers.py > import authenticate, gettext as _
+  - create class AuthTokenSerializer and methods
+5. Create view: user/views.py
+  - import ObtainAuthToken
+  - import api_settings
+  - import AuthTokenSerializer
+  - Add class CreateTokenView(ObtainAuthToken)
+6. Edit user/urls.py - add token/ endpoint to URLPATTERNS
+7. it was already included in app/urls.py in the previous s68 code
+8. run unittest check
+
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
