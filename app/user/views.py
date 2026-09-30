@@ -11,7 +11,7 @@ from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from user.serializers import AuthTokenSerializer, UserSerializer
 
@@ -52,7 +52,8 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
 @extend_schema(
     request=None,  # Tells Swagger that no request body / serializer is required
-    responses={200: dict(detail="Successfully logged out. YEAH")}, # Optional: documents the response
+    # responses={200: dict(detail="Successfully logged out. YEAH")}, # Optional: documents the response
+    responses={200: OpenApiResponse(description="Successfully logged out. YEAH")}, # Optional: documents the response
 )
 
 class RevokeTokenView(APIView):

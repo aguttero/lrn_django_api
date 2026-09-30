@@ -670,7 +670,8 @@ reverse > admin:core_user_change
 
   *add user page - Session 58
   similar to previous
-  
+
+# API design Sections  
 ## API Documentation Section 11 s59
 need to document:
 - Endpoints
@@ -882,7 +883,6 @@ If you are using DRF’s built-in rest_framework.authtoken, tokens are stored di
 DRF expects you to use your login/logout architectural patterns to manage this. However, it takes very few lines of code to write your own custom method and endpoint.
 
 ##### Implementation - Funciona pero no documenta OK
-ZAG: no documenta automático en swagger (buscar como resolver)
 ZAG: solo devuelve el mensaje de detail como response y status 200 (buscar como devolver el user email??)
 ZAG: Buscar como crear un revoke que un admin pueda aplicar a un usuario determinado.
 ZAG: Crear el unittest
@@ -895,12 +895,12 @@ Create a custom API view that deletes the token tied to the current requesting u
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from drf_spectacular.utils import extend_schema 
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.permissions import IsAuthenticated
 
 @extend_schema(
     request=None,  # Tells Swagger that no request body / serializer is required
-    responses={200: dict(detail="Successfully logged out. YEAH")}, # Optional: documents the response
+    responses={200: OpenApiResponse(description="Successfully logged out. YEAH")}, # Optional: documents the response
 )
 
 class RevokeTokenView(APIView):
@@ -1034,9 +1034,9 @@ What does your urls.py file look like for the user app? If you haven't mapped th
 2. swagger: http://localhost:8000/api/docs
 3. Create a user > user > POST
   - can use json format or app/x-form-data
-4 Get Token:
-5a9cdfb3c71c588035783644f11ce3214fd96943
-
+4 Get Token: - see them in django admin / tokens
+dev 1: 5a9cdfb3c71c588035783644f11ce3214fd96943
+dev2: 6f60fcea096f788b1b67b4b5c5f0d187057caf7f
 
 5. Click Authorize > Token auth:
   - type: Token <token value without quotes> 
@@ -1045,6 +1045,54 @@ What does your urls.py file look like for the user app? If you haven't mapped th
    - PUT -> replaces entire object
    - PATCH -> specific key value to change
 
+## Recipe API Design Section 13
+Features:
+- Create
+- List
+- View Detail
+- Update
+- Delete
+
+## Endpoints
+* recipes/
+    GET - List all recipes
+    POST - Create recipe
+* recipes/<recipe_id>/
+    GET - View details of recipe
+    PUT/PATCH - Update recipe
+    DELETE - Delete recipe
+
+## APIView vs Viewsets classes
+* What is a View:
+  - Handles a request made to a URL (coded functions)
+  - Django uses functions
+  - DRF uses classes
+    - Reusable logic
+    - You are allowed to Override behaviour
+  - DRF also supports decorators
+  - APIView and Viewsets are DRF base classes
+
+* What is an API View:
+  - Focused around HTTP methods
+  - Class methods for HTTP methods
+    - GET, POST, PUT, PATCH, DELETE
+  - Provide flexibility over URLs and logic
+  - Useful for non CRUDS APIs
+    - Avoid for simple Create, Read, Update, Delete APIs
+    - Great for Bespoke logic (ie: auth, jobs, external apis)
+
+* What is a Viewset:
+  - Focused around actions
+    - Retrieve, list, update, partial update, destroy
+  - Map to Django Models
+  - Use Routers to generate URLs
+  - Great for CRUD operations over models
+
+## Coding Recipe API
+1. TDD edit core/tests/test_models.py
+  - import Decimal
+  - from core import models
+  - 
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
