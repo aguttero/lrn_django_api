@@ -3,8 +3,12 @@ Tests for models.
 """
 
 # fetches the default user model for the project:
-from django.contrib.auth import get_user_model
+from decimal import Decimal  # for values in recipe model
+
+from django.contrib.auth import get_user_model  # to test user model
 from django.test import TestCase
+
+from core import models  # to test recipe model
 
 
 class ModelTests(TestCase):
@@ -55,3 +59,21 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_recipe(self):
+        """Test creating a recipe is successful."""
+        # need a user to assing the recipe to
+        user = get_user_model().objects.create_user(
+            "test@example.com",
+            "testpass123",
+        )
+        recipe = models.Recipe.objects.create(
+            user=user, # user created above
+            title="Sample recipe name",
+            time_minutes=5,
+            price=Decimal("5.50"),
+            description="Sample receipe description.",
+        )
+
+        # validates the string representation of the model instance
+        self.assertEqual(str(recipe), recipe.title)

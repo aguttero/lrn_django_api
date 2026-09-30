@@ -63,3 +63,5 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)
 # we need to specify ,UserAdmin) so that it picks the page
 # display class we defined, otherwise it uses the default
+
+admin.site.register(models.Recipe)

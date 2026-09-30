@@ -1,6 +1,7 @@
 """
 Database models.
 """
+from django.conf import settings # for field user in class Recipe
 
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -35,7 +36,8 @@ class UserManager(BaseUserManager):
 
         return user
 
-
+# we are not using standard base class models.Model here
+# because we are extending the existing functionality of users
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
@@ -51,3 +53,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     # this is what replaces the django default username field from
     # username to email
     USERNAME_FIELD = "email"
+
+# here we use the Base class provided by django
+# on_delete=CASCADE if user is deleted all recipes are deleted
+class Recipe(models.Model):
+    """Recipe object."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    time_minutes = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    link = models.CharField(max_length=255, blank=True)
+
+    # string representation of this object
+    # used in django admin too
+    def __str__(self):
+        return self.title

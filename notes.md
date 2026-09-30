@@ -1089,10 +1089,48 @@ Features:
   - Great for CRUD operations over models
 
 ## Coding Recipe API
+### Models
 1. TDD edit core/tests/test_models.py
-  - import Decimal
-  - from core import models
-  - 
+  - import Decimal (default django class used for recipe price values)
+  - from core import models ()
+  - test to create a recipe
+2. test the test to see it fail
+3. edit core/models.py
+  - import settings -> needed for field user in class Recipe
+  - best practice to reference user model (settings.AUTH_USER_MODEL) to allow for user model changes in a single place vs hardcoded everywhere
+4. Edit core/admin.py
+    - add admin.site.register(models.Recipe)
+5. run makemigrations (added recipe class table to models.py)
+6. run tests again -v 2 (validate that migrates core_0002)
+
+### recipe app and api listing s80
+1. create recipe app: manage.py startapp recipe
+2. remove unused files: 
+  - migrations/
+  - admin.py
+  - models.py
+  - tests.py 
+3. add (add tests/ + __init__.py)
+4. add app to INTALLED APPS in settings.py
+5. TDD: recipe/tests/test_recipe_api.py
+6. Test the test to fail (expect to fail in import serializers which are not created yet)
+7. create recipe/serializers.py > ModelSerializer
+8. Test again. It should fail to NoReverseMatch
+9. Create recipe/views.py
+10. Configure recipe/urls.py
+  - DefaultRouter allows to automatically create routes for all options of the view
+      router = DefaultRouter()
+      router.register('recipes', views.RecipeViewSet)
+    autogenerates URLs for the functionality enabled in the viewset (CRUD -> GET, POST, PUT, DEL)
+11. add include to app/urls.py
+12. Re run test and check it passes ok
+
+### recipe api detail s83
+1. TDD recipe/tests/test_recipe_api.py
+  - import RecipeDetailSerializer
+2. test that fails (no RecipeDetailSerializer)
+3. Code serializer recipe/serializers.py
+4. code recipe/views.py - need to override standard list viewset to add override for specific one for the detail endpoint
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.

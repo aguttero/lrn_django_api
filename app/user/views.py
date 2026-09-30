@@ -7,11 +7,11 @@ from rest_framework import authentication, generics, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 
-# for the logout:
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+
+from rest_framework.views import APIView # for logout/revoke
+from rest_framework.response import Response # for logout/revoke
+from rest_framework import status # for logout/revoke
+from drf_spectacular.utils import extend_schema, OpenApiResponse # for logout/revoke
 
 from user.serializers import AuthTokenSerializer, UserSerializer
 
