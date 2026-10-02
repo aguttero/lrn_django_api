@@ -34,3 +34,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return serializers.RecipeSerializer
 
         return self.serializer_class
+
+    # Overrides behaviour for when DRF saves a model in a viewset
+    # When we create a new objext throuth this viewset using the create feature, we
+    # are going to call this method as part of that object creation
+    # Call it with the validated serializer as parameter
+    # validated data by the viewset before this method us called
+
+    def perform_create(self, serializer):
+        """Create a new recipe."""
+        serializer.save(user=self.request.user)

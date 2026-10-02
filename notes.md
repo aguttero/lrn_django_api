@@ -1131,6 +1131,20 @@ Features:
 2. test that fails (no RecipeDetailSerializer)
 3. Code serializer recipe/serializers.py
 4. code recipe/views.py - need to override standard list viewset to add override for specific one for the detail endpoint
+5. Code actual api call create recipe test
+  - recipe/tests/test_recipe_api.py
+6. Test should fail, to integrity error
+  - we have not coded the view to set the authenticated user with the recipe (assign user_id FK to the recipe obj see s86 > def perform_create)
+  - The viewset includes 90% of the functionality to reate a new object. It does not include the logic to set the object user to the authenticated user (see s86)
+
+### Create recipe api functionality s86
+1. Edit recipe/views.py
+  - add def perform_create(self, serializer)
+  Test should pass ok
+  - Build additional tests s87
+2. Test in APi browser s88
+
+
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
