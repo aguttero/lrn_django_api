@@ -1144,7 +1144,36 @@ Features:
   - Build additional tests s87
 2. Test in APi browser s88
 
+## TAGs API Design Section 14 s90
+### Features:
+* Add ability to add recipe tags
+* Create model for tags
+* Add tag API endpoints
+* update recipe endpoint to suppor tags
+  - adding and listing tags
 
+### Data Model
+* name : Name of the tag to create
+* user: User who created/owns tag
+
+### Endpoints:
+* /api/recipe/tags
+  - POST - Create tag
+  - PUT/PATCH - Update tags
+  - DELETE - Remove tags
+  - GET - List available tags
+
+### Code implementation
+1. Create Test > core/tests/test_models.py
+    - add create_user helper at top
+    - add test_create tag
+  - Test should fail to Attr Error: core.models no attribute 'Tag'
+2. in core/models.py
+  - add tag (many to many) to recipe class
+  - add class Tag with FK to settgins.AUTH_USER_MODEL
+  - Test should fail to missing migration > psycopg2 InvalidCursorName
+3. run makemigrations > Run test, should pass ok
+  - if it asks to delete test DB say yes (didn't close prpoperly in prev test)
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
