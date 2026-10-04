@@ -53,12 +53,15 @@ class PublicUserApiTests(TestCase):
             "password": "testpass123",
             "name": "Test Name",
         }
-        # ZAG payload2 used to verify that DB User table is reset each time each def_test is run
-        payload2 = {
-            "email": "test2@example.com",
-            "password": "testpass123",
-            "name": "Test Name 2",
-        }
+        # ZAG payload2 used to verify that DB User table
+        # is reset each time each def_test is run
+        # ZAG
+        # payload2 = {
+        #     "email": "test2@example.com",
+        #     "password": "testpass123",
+        #     "name": "Test Name 2",
+        # }
+        # EZAG
         create_user(**payload)
         # res = self.client.post(CREATE_USER_URL, payload2)
         res = self.client.post(CREATE_USER_URL, payload)
@@ -95,7 +98,7 @@ class PublicUserApiTests(TestCase):
         }
         res = self.client.post(TOKEN_URL, payload)
         # ZAG
-        print (res)
+        print(res)
         print(res.data)
         # EZAG
         self.assertIn("token", res.data)
@@ -120,7 +123,8 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_blank_password(self):
         """Test posting a blank password returns an error."""
-        # ZAG: i'm adding the create_user here to test against an existing user too
+        # ZAG: i'm adding the create_user here to
+        # test against an existing user too
         create_user(email="test@example.com", password="goodpass")
         # EZAG
         payload = {"email": "test@example.com", "password": ""}
@@ -133,8 +137,8 @@ class PublicUserApiTests(TestCase):
         """Test authentication is required for users."""
         res = self.client.get(ME_URL)
         # ZAG
-        print (res)
-        print (res.data)
+        print(res)
+        print(res.data)
         # EZAG
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 

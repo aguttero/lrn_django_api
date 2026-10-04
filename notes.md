@@ -1164,16 +1164,32 @@ Features:
   - GET - List available tags
 
 ### Code implementation
+#### Create Tag data model s91
 1. Create Test > core/tests/test_models.py
     - add create_user helper at top
     - add test_create tag
   - Test should fail to Attr Error: core.models no attribute 'Tag'
-2. in core/models.py
+2. Create Tag class in core/models.py
   - add tag (many to many) to recipe class
   - add class Tag with FK to settgins.AUTH_USER_MODEL
   - Test should fail to missing migration > psycopg2 InvalidCursorName
 3. run makemigrations > Run test, should pass ok
   - if it asks to delete test DB say yes (didn't close prpoperly in prev test)
+4. Register tag model in core/admin.py
+
+#### Create Tag listing API s92
+1. TDD > recipe/tests/test_tags_api.py
+  - Test should fail to 
+2. Create tag serializer and Tag listing api > recipe/serializers.py
+3. Add view: recipe/views.py
+  - import mixins (Mix into a view to add additional functionality)
+  - import model Tag
+  - add TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet)
+4. register api routes in recipe/urls.py
+  - add router registration > router.register('tags', views.TagViewSet)
+5. Test should pass ok
+
+#### Code update tag api s93
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.

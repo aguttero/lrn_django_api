@@ -65,3 +65,4 @@ admin.site.register(models.User, UserAdmin)
 # display class we defined, otherwise it uses the default
 
 admin.site.register(models.Recipe)
+admin.site.register(models.Tag)
