@@ -1189,7 +1189,15 @@ Features:
   - add router registration > router.register('tags', views.TagViewSet)
 5. Test should pass ok
 
-#### Code update tag api s93
+#### Code update/delete tag api s93
+1. TDD -> detail tag url builder function + test_update_tag
+  - Test should faild to NoReverseMatch
+2. recipe/views.py > add mixins.UpdateModelMixin to class TagViewSet
+  - Test should pass ok
+3 repeat for delete op
+  - Test fails in 405 != 204 // 405: Not Suppported status code
+  - add in views.py > mixins.DestroyModelMixin
+  - Test should pass ok
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.

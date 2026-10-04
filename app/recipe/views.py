@@ -46,8 +46,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 # mixin that allows to add listing func for listing models
+# mixins need to be added as parameters before the GenericViewSet
 # standard CRUD > GenericViewSet features
-class TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class TagViewSet(mixins.DestroyModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     """Manage tags in the database."""
     serializer_class = serializers.TagSerializer
     queryset = Tag.objects.all()
