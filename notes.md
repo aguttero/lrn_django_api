@@ -1163,7 +1163,7 @@ Features:
   - DELETE - Remove tags
   - GET - List available tags
 
-### Code implementation
+### Code implementation Part 1
 #### Create Tag data model s91
 1. Create Test > core/tests/test_models.py
     - add create_user helper at top
@@ -1201,7 +1201,33 @@ Features:
 
 ### Nested Serializers
 * Serializer within a serializer
-* Used for 
+* Used for fields that are complex objects
+* when using in class definition the nested class needs to be declare before the nesting class
+* example  "tags" could be a nested serializer
+```json
+{
+  "title":"Some title",
+  "user": "Jeff",
+  "tags": [
+    {"name":"Tag 1"},
+    {"name":"Tag 2"}
+  ]
+}
+```
+* Limitations
+ - By default: Read Only - can read but can't create objects with nested serialzier
+ - Can write custom logic to override the read-only limitation
+
+### Code Implementation Part2
+#### Create Tags with nested serializers s99
+1. TDD > recipe/tests/test_recipe_api.py (instead of test_tag_api)
+  - we are adding support to create recipes that include tags (create or use existing tags) in the create recipe process
+  - Test should fail to count of tags 0!=2 (we did not create the create feature yet)
+2. Create feature to create tag while creating recipe s100 recipe/serializers.py
+  - Move TagSerializer class to the top as will be nested inside RecipeSerializer class
+  - add method to override read-only limitation
+    - def create(self, validated_data): (see code)
+
 
 
 ## TLS Certificate - Let's Encrypt
