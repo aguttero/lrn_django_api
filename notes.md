@@ -1199,5 +1199,10 @@ Features:
   - add in views.py > mixins.DestroyModelMixin
   - Test should pass ok
 
+### Nested Serializers
+* Serializer within a serializer
+* Used for 
+
+
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
