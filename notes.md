@@ -1137,7 +1137,7 @@ Features:
   - we have not coded the view to set the authenticated user with the recipe (assign user_id FK to the recipe obj see s86 > def perform_create)
   - The viewset includes 90% of the functionality to reate a new object. It does not include the logic to set the object user to the authenticated user (see s86)
 
-### Create recipe api functionality s86
+### recipe api functionality s86
 1. Edit recipe/views.py
   - add def perform_create(self, serializer)
   Test should pass ok
@@ -1234,6 +1234,153 @@ Features:
   - Test should pass ok
 4. Test API with swagger / django admin
 
+## Ingredients API Section 15 s105
+### Tasks
+* Ability to add ingredients to recipes
+* Create model for ingredients
+* Add Ingredients API
+* Update Recipe endpoint
+  - Create Ingredients
+  - Manage Ingredients
 
+### Data Model (similar to tags)
+- Name: Name of ingredient to create
+- User: User who owns ingredient
+
+### Ingredients Endpoint
+- /api/recipe/ingredients/
+  - GET - List ingredients
+- /api/recipe/ingredients/<id>/
+  - GET - Get ingredient details
+  - PUT/PATCH - update ingredient
+  - DELETE - Remove ingredient
+- /api/recipe/
+  - PUT - Create ingredients (as part of recipe)
+- /api/recipe/<id>
+  - PUT/PATCH - Create or modify ingredients
+
+### Code implementation notes
+1. add model class Ingredient in core/models.py and many to many field to recipe class
+2. TDD core/tests/test_models.py
+3. run makemigrations
+4. add model to admin page > core/admin.py
+5. TDD recipe/tests/test_ingredients_api.py
+6. Build IngredientSerializer > recipe/serializers.py (above recipe due to nesting)
+7. Add IngredientViewSet in recipe/views.py
+8. Register urls in recipe/urls.py
+9. add features to create/manage recipes with ingredients TDD and code > 
+  - recipe/tests/test_recipe_api.py
+  - recipte/serializers.py
+
+#### Refactor TagViewSet / IngredientViewSet
+* Very similar code
+* Refactor using inheritance
+* see recipe/views_unrefactored.py
+
+## Image API Section 16 s 121
+### Tasks
+* Handling static/media files
+* Addind image dependencies
+* Update recipe data model to support image field
+* add image upload endpoint
+
+### Endpoints
+/api/recipes/<id>/upload-image/
+  - POST - Upload Image
+
+### Dependiencies for images
+* Pillow # ZAG OK 2026 - fork of PIL (Python Imaging Library)
+  - Requires in docker: zlib, zlib-dev // AND jpeg-dev
+
+#### Other libraries (ZAG reserach 2026 Gemini)
+  - pillow good for: general image editing (resize, crop, rotate, convert formats, draw basic text or shapes)
+  - ZAG: OpenCV best for computer vision and video (real time object detection, face recognition, advanced image manipulation)
+  - ZAG: NumPy / Scikit-image: scientific and mathematical analysis (images as arrays of numbers for data science or medical imaging)
+
+### Setup dependencies s122 
+1. dockerfile > linux packages needed to install and use the pillow library
+2. requirements.txt > Pillow>=8.2.0,<8.3.0
+3. docker compose build 
+
+## Media and Static files in Django & Docker
+* media: files uploaded at runtime (i.e. user upload recipe image)
+* static: files generated on build (django and developer generated)
+* django configuration settings.py
+  - STATIC_URL - Base URL for static files to be served (ie: /static/static)
+  - MEDIA_URL (ie: /static/media)
+  - MEDIA_ROOT - Root on the file system to store the files (ie: /vol/web/media)
+  - STATIC_ROOT (ie: /vol/web/static)
+* Docker Volumes > stores persistent data
+  - configure: /vol/web - store static and media subdirectories
+
+### Mapping Django dev and Django Prod & Collect Static command S123
+  - django command to gather all static files
+  - run python manage.py collecstatic > Puts all static files into STATIC_ROOT in production
+
+### Static files configuration s124
+1. dockerfile
+mkdir needs to be after django-user for file permission purposes. So the djang-user owns these directories
+```sh
+django-user && \
+mkdir -p /vol/web/media && \ #-p creates all subdirs
+mkdir -p /vol/web/static && \
+chown -R django-user:django-user /vol && \ # chown change owner -R (recursive)
+chmod -R 755 /vol # change mode: change permisions 755 
+```
+2. run: docker compose build
+3. Update Docker-compose yml file
+  * sets a volume to vol directory in docker image for persistent data under dev in local machine
+  * add new volume under app:
+    - dev-static-data:/vol/web
+  * declare under volumes:
+    - dev-static-data:
+4. settings.py
+```python
+STATIC_URL = '/static/static/' # change existing one in settings.py
+MEDIA_URL = '/static/media/'
+
+MEDIA_ROOT = '/vol/web/media'
+STATIC_ROOT = '/vol/web/static'
+```
+5. URL mappings to support using media files with dev server > app/urls.py
+  - import static, import settings
+  - if settings.DEBUG:...
+  ```python
+  from django.conf.urls.static import static
+  from django.conf import settings # to retrieve the setting in the if DEBUG
+
+  # to enable django dev to serve media files
+  if settings.DEBUG:
+      urlpatterns += static(
+          settings.MEDIA_URL,
+          document_root=settings.MEDIA_ROOT,
+      )
+```
+
+## Modify recipe model to handle images s125
+### Core Code implementation
+1. TDD core/tests/test_models.py
+2. core/models.py
+  - import uuid, os > for file management functions
+  - generate file path for new recipe image
+  - add image field to Recipe Class
+3. run makemigrations
+4. validate test runs ok
+
+### API code implementation s126
+1. TDD recipe/tests/test_recipe_api.py
+  - import tempfile, os
+  - from PIL import Image
+2. Code api upload feature s127
+  - recipe/serializers.py -> image file upload serializer
+  - recipe/views.py
+    - change get_serializer_class (elif)
+    - add actions via actions decorator @action -> add additional functionalities to standard viewset funcs like list, update, delete
+      - add custom action: upload_image
+  - settings.py
+    - Enable image uploads to work thru browsable interface
+    - SPECTACULAR_SETTINGS = COMPONENT_SPLIT_REQUEST: True 
+3. Test in browsable interface
+  
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.

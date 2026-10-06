@@ -2,6 +2,9 @@
 Tests for models.
 """
 
+# tool to mock things (behaviour)
+from unittest.mock import patch
+
 # fetches the default user model for the project:
 from decimal import Decimal  # for values in recipe model
 
@@ -89,3 +92,28 @@ class ModelTests(TestCase):
 
         # Validates tag was create and that name matches
         self.assertEqual(str(tag), tag.name)
+
+    def test_create_ingredient(self):
+        """Test creating an ingredient is successful."""
+        user = create_user()
+        ingredient = models.Ingredient.objects.create(
+            user=user,
+            name='Ingredient1'
+        )
+
+        self.assertEqual(str(ingredient), ingredient.name)
+
+    # uuid for filename(unique identifier)
+    @patch('core.models.uuid.uuid4')
+    def test_recipe_file_name_uuid(self, mock_uuid):
+        """Test generating image path."""
+        # this is the mock response -> 'test-uuid'
+        uuid = 'test-uuid'
+        # here we assign the mocked return value
+        mock_uuid.return_value = uuid
+        # this is the function that generates the path to the image
+        # that is being uploaded. None replaces the instance parameter
+        file_path = models.recipe_image_file_path(None, 'example.jpg')
+
+        # test that the paths matches
+        self.assertEqual(file_path, f'uploads/recipe/{uuid}.jpg')
