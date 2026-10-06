@@ -30,26 +30,57 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'time_minutes', 'price', 'link', 'tags']
         read_only_fields = ['id'] # PK
 
+    # internal method from s102 (update tags override write nested field)
+    def _get_or_create_tags(self, tags, recipe):
+        """Handle getting or creating tags as needed."""
+        # gets the authenticated user form context
+        auth_user = self.context['request'].user
+
+        # loops thru tags we popped out
+        # creates tags (or gets if tag already exists)
+        # created returns True(created) or False(exists)
+        for tag in tags:
+            tag_obj, created = Tag.objects.get_or_create(
+                user=auth_user,
+                # could use name=tag['name']
+                # **tag allows for new fields in tag in the future (futureproof)
+                **tag,
+            )
+            recipe.tags.add(tag_obj)
+
     # custom logic to override read-only limitation for
     # nested serializer
     def create(self, validated_data):
         """Create a recipe."""
         # pops tags from data
         tags = validated_data.pop('tags', [])
-        # crates recipe object without tags
+        # creates recipe object without tags
         recipe = Recipe.objects.create(**validated_data)
-        # gets the authenticated user form context
-        auth_user = self.context['request'].user
-
-        # creates tags (or gtets if tag already exists)
-        for tag in tags:
-            tag_obj, created = Tag.objects.get_or_create(
-                user=auth_user,
-                **tag,
-            )
-            recipe.tags.add(tag_obj)
+        self._get_or_create_tags(tags, recipe)
 
         return recipe
+
+    # same as create method but adds parameter 'instance'
+    # (existing instance to update)
+    def update(self, instance, validated_data):
+        """Update recipe."""
+        # if there is no existing tags we get None
+        # if there are, pop generates an empty list []
+        tags = validated_data.pop('tags', None)
+        # if tags is an empty list
+        if tags is not None:
+            # clears all tags in the DB linked to the recipe record
+            instance.tags.clear()
+            # creates the tags
+            self._get_or_create_tags(tags, instance)
+
+        # loops to assign everything else (except nested values)
+        for attr, value in validated_data.items():
+            # takes instance and sets the value to the attribute
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 # this is an extension of RecipeSerializer.Meta

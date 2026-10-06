@@ -1227,7 +1227,12 @@ Features:
   - Move TagSerializer class to the top as will be nested inside RecipeSerializer class
   - add method to override read-only limitation
     - def create(self, validated_data): (see code)
-
+  - Test should pass ok
+3. Feature to udpate tags assigned to a recipe s101
+  - test should fail. not allowed to write nested fields
+  - override method s102 > recipe/serializers.py
+  - Test should pass ok
+4. Test API with swagger / django admin
 
 
 ## TLS Certificate - Let's Encrypt
