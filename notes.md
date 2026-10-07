@@ -1381,6 +1381,12 @@ STATIC_ROOT = '/vol/web/static'
     - Enable image uploads to work thru browsable interface
     - SPECTACULAR_SETTINGS = COMPONENT_SPLIT_REQUEST: True 
 3. Test in browsable interface
-  
+  - id of recipe
+  - multipart/form-data to be able to upload image (DSC05176.jpg)
+  - look for file in docker volume /media/uploads/recipe/{uuid}.jpg
+  - localhost:8000/static/path should serve the image in browser
+    - http://localhost:8000/static/media/uploads/recipe/c68966a0-f3e7-41e9-9be8-190bd6618343.jpg
+  - added 'image'(to the 'descrption' list) to Serializers.py in RecipeDetailSerializer > recipe detail endpoint now returns the file name
+4. PENDING: deleting the recipe does not delete the image from server/container
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
