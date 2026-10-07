@@ -1388,5 +1388,70 @@ STATIC_ROOT = '/vol/web/static'
     - http://localhost:8000/static/media/uploads/recipe/c68966a0-f3e7-41e9-9be8-190bd6618343.jpg
   - added 'image'(to the 'descrption' list) to Serializers.py in RecipeDetailSerializer > recipe detail endpoint now returns the file name
 4. PENDING: deleting the recipe does not delete the image from server/container
+
+## Filterin in API Section 17 s130
+### Tasks
+* filter recipe by ingredients / tag
+  - Find certain types of recipes based in the tags/ingredients assigned to the recipe
+  - (ie: tag 'vegan', find all recipes with tag 'vegan')
+* Filter tags / ingredients by assigned
+  - filter a list of options to show to the user of ingredients or tags they want to filter by
+  - (shows a list of tags and ingredients that are currently assigned to any recipe they own)
+* Define OpenAPI parameters
+  - Update documentation
+
+### Example endpoints > query parameters
+* Filter recipe by tag(s):
+  - GET /api/recipe/recipes/?tags=1,2,3
+* Filter recipe by ingredient(s):
+  - GET /api/recipe/recipes/?ingredients=1,2,3
+* Filter tag by assigned: (don't show any tags that don't have a recipe associated with them)
+  - GET /api/recipe/tags/?assigned_only=1
+* Filter ingredients by assigned: (don't show any ingredients that don't have a recipe associated with them)
+  - GET /api/recipe/ingredients/?assigned_only=1
+
+### AutoGen OpenAPI Schema examples s
+* some things need to be manually configured
+  - Custom query params
+  - Use DRF Spectacular extend_schema_view decorator
+
+### Code implementation filtering recipes s131
+1. TDD recipe/tests/test_recipe_api.py
+2. recipe/views.py
+* from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    OpenApiParameter,
+    OpenApiTypes,
+)
+* add method to RecipeViewSet
+* modify get_queryset
+3. Add documentation changes - recipe/views.py Above class RecipeViewSet
+```python
+@extend_schema_view(
+    # we are extending the info for the list endpoint
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'tags',
+                OpenApiTypes.STR, 
+                description='Comma separated list of tag IDs to filter',
+            ),
+            OpenApiParameter(
+                'ingredients',
+                OpenApiTypes.STR,
+                description='Comma separated list of ingredient IDs to filter',
+            ),
+        ]
+    )
+)
+```
+4. code tag and ingredient filtering s 134 > recipe/views.py
+in class BaseRecipeAttrVeiwSet
+modify get_queryset to return the filtered query if tag or ingredient filter is requestd
+Add @extend schema
+5. Test
+6. Test in browser
+
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
