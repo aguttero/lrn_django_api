@@ -1563,7 +1563,7 @@ https://www.youtube.com/watch?v=IoxHUrbiqUo
 - Retrieve values with docker compose
 - Assign/pass to applications
 
-#### implementation
+#### implementation - how env files work
 * .env file
   - DB_NAME=dbname
 * docker-compose.yml
@@ -1574,8 +1574,9 @@ https://www.youtube.com/watch?v=IoxHUrbiqUo
 * retrirve from python:
   import OS
   MY_CONFIG = os.environ.get("MY_CONFIG")
+* .env.sample -> .env file template (not .gitignored)
 
-### Docker compose and .env for deployment s143
+### Docker compose and .env for deployment s143 s144
 1. create docker-compose-deploy.yml in project root folder
 - restart: always  (if app crashes it restarts automatically by docker)
 - proxy: reverse proxy server
@@ -1596,6 +1597,48 @@ https://www.youtube.com/watch?v=IoxHUrbiqUo
   5. Run prod app in local machine to test it (simulation before actual deployment)
     - copy .env.sample to project_root .env (ignored bi .gitignore)
     - change port 80 to 8000 in docker-compose-deploy (my local machine proably uses 80 for something else)
+    - cd to project root folder
+    - run: docker-compose -f docker-compose-deploy.yml down
+    - run: docker-compose -f docker-compose-deploy.yml up
+
+
+
+#### Debugging: 
+Error: run.sh not found in PATH (this was a typo in ENV PATH in docker file)
+- IF NEED TO REBUILD DUE TO dockerfile error:
+      - docker compose -f docker-compose-deploy.yml up --build
+
+
+* How to validate the run.sh file inside the container
+
+If you rebuild and still get an error like executable file not found in $PATH or No such file or directory, you can validate the script's presence, permissions, and format inside the container using these steps:
+1. Start a temporary override container
+
+If the container is crashing instantly upon boot, you cannot use standard docker exec commands. Instead, force the container to start using sh or bash as its entry point, bypassing your broken execution loop:
+```bash
+docker compose -f docker-compose-deploy.yml run --entrypoint /bin/sh <service_name>
+```
+(Replace <service_name> with the name of the service defined inside your docker-compose-deploy.yml file, such as app or web).
+
+2. Check the File and Permissions
+
+Once inside the interactive terminal of the container, run:
+```bash
+ls -la /scripts/run.sh
+```
+
+• Verify existence: Ensure the path matches exactly.
+• Verify permissions: The output should show executable permissions (e.g., -rwxr-xr-x). If it doesn't, you need to add RUN chmod +x /scripts/run.sh into your Dockerfile.
+
+
+3. Check for Line Endings (CRLF vs LF)
+
+A very common hidden error—especially if you edit files on Windows—is line ending mismatches. Windows saves files with CRLF (\r\n), but Linux expects LF (\n). If run.sh contains Windows line endings, Linux will look for an interpreter named bash\r and fail with a misleading "file not found" error.
+To check this inside the container, run:
+```bash
+cat -v /scripts/run.sh
+```
+If you see ^M at the end of every line, your file has Windows line endings. You will need to fix this in your text editor on your host machine (switch line endings from CRLF to LF) and rebuild again.
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
