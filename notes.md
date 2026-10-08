@@ -1453,5 +1453,110 @@ Add @extend schema
 5. Test
 6. Test in browser
 
+## Deployment Overivew
+### Deployment options
+https://www.youtube.com/watch?v=IoxHUrbiqUo
+1. installing on a server - old school, complex to mantain
+2. docker - Good por MVP - runs on a single server - difficult to scale
+3. Docker orchestration server - AWS / Kubernetes / Serverless AWS Fargate
+4. Serverless technology
+  - Google Cloud Run / Google App Engine
+  - AWS elastic Beanstalk / ECS Fargate
+
+### Choice for this training
+- MVP > Single VPS on AWS (EC2)
+- Docker / Docker compose 
+- Check development course terraform (udemy)
+
+### Steps
+1. Configure for deployment
+2. Create server in AWS
+3. Deploy App
+
+### Detail Steps
+1. Setup a proxy (reverse proxy)
+2. Handle static/media files
+3. Configuration for app in the server
+
+* Components
+- WSGI > Web Server Gateway Interface
+- Persistent data (stateless) (no user files or DB)
+- Reverse Proxy (http requests)
+  - Best Practice for Django Apps > WSGI great at python code, but not at serving requests
+
+1. nginx
+2. uWSGI / equivalent to uvicorn
+3. Docker compose
+
+### Docker Compose Setup
+- app service > runs WSGI
+- Postgres DB (persistent data in DB)
+- DB Volume: postgres-data
+- Reverse Proxy: Nginx
+- Static data volume: CSS, JS, Media Files
+
+### Handling configuration
+- Source code > Git
+- Credentials
+  - Env Variables
+  - or Secret Managers
+- Env Variables
+  - create .env on server
+  - set values in docker compose
+
+### AWS Setup
+- Security: lot of hackers for AWS accounts 
+  - use MFA
+  - use strong password
+  - keep local machine secure
+  - delete account when not in use
+
+## Deployment implementation s139
+### Dockerfile, run.sh, reqs.txt
+1. config Dockerfile
+  - copy scripts + chmod -R /scripts at the end
+  - add to temp build: dependendy linux-headers (WDGI pagckage)
+  - add /scripts: dir to the path: ENV PATH="/scripts:/py/bin:$PATH"
+  - add CMD ["run.sh"] > the script that runs our application (can be overriden by docker compose) (ej dev server runs python manage.py runserver)
+2. in local project root create /scripts/run.sh
+- first line: #!/bin/sh (marks file as Shell script file)
+- set -e (any cmd that fails, forces to crash the whole script)
+- python manage.py wait_for_db (wait for DB to be available)
+- python manage.py collectstatic --noinput (collects all static files and puts in static files directory > nginx )
+- python manage.py migrate (for any pending migration to execute)
+- uwsgi --socket :9000 --workers 4 --master --enable-threads --module app.wsgi 
+    * runs uwsgi services
+    * TCP Port 9000 (nginx connects here)
+    * 4 wsgi workers (app runs on 4 workers // config based on CPUs in server) 
+    * master: set UWSGI daemon or running app as master thread > main thing runnning on server
+    * enable-threads (so that if app is using multi threads can be used thru WSGI)
+    * module app.wsgi > run app/app/wsgi.py
+3. in requirements.txt add uwsgi>=2.0.19,<2.1
+4. run docker compose build - Check it completes with no errors
+
+### reverse proxy config - nginx
+1. create /proxy/default.conf.tpl in local project root folder (tpl = template)
+- LISTEN_PORT -> env var
+- location /static -> mapping to serve
+- location / -> redirect to uwsgi {APP_HOST}:{APP_PORT} // nginx params // max file size 10MB (if need larger increase here)
+2. setup uwsgi params /proxy/uwsgi_params -> all that django needs to work with nginx
+- info: https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html#what-is-the-uwsgi-params-file
+3. create /proxy/run.sh > to start our proxy server
+- envsubst inserts (pipes) env config (tpl) to final conf (reads env var values and pase them to nginx conf)
+- nginx -g 'daemon off;' starts server on foreground (as is running in docker container, we want it to be the main app, and logs go into screen. It runs until server down or docker container stops )
+4. docker file to run nginx as service for our project - s141
+- create /proxy/Dockerfile
+- nginx default image runs in root user. for security as we don't need root, we use the -unprivileged / More secure way to run app
+- LISTEN_PORT=8000 servers listens on (can be changed)
+- APP_HOST=app (name where wsgi service runs. Can be changed )
+- APP_PORT=9000 (port for wsgi app, can be changed)
+- touch creates an empty file to have permission to ovewrite content when populate conf.tpl in run.sh
+- chown nginx -> gives ownership to nginx user to default.conf file
+- chmod +x (execute permission to run run.sh)
+5. test build docker file > see it builds ok
+- CD to proxy
+- docker build . (. local dir)
+
+
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
