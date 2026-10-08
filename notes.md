@@ -1593,13 +1593,16 @@ https://www.youtube.com/watch?v=IoxHUrbiqUo
   - ALLOWED_HOSTS = [] > Security, only allows access to specific hostnames
     - set comma separated list of hostnames
     - add below: ALLOWED_HOSTS.extend(filter(None,os.environ.get('ALLOWED_HOSTS', '').split(','),))
-  4. Update docker-compose.yml (dev compose) services>app>environment> - DEBUG=1
-  5. Run prod app in local machine to test it (simulation before actual deployment)
-    - copy .env.sample to project_root .env (ignored bi .gitignore)
-    - change port 80 to 8000 in docker-compose-deploy (my local machine proably uses 80 for something else)
-    - cd to project root folder
-    - run: docker-compose -f docker-compose-deploy.yml down
-    - run: docker-compose -f docker-compose-deploy.yml up
+4. Update docker-compose.yml (dev compose) services>app>environment> - DEBUG=1
+5. Run prod app in local machine to test it (simulation before actual deployment)
+  - copy .env.sample to project_root .env (ignored bi .gitignore)
+  - change port 80 to 8000 in docker-compose-deploy (my local machine proably uses 80 for something else)
+  - cd to project root folder
+  - run: docker-compose -f docker-compose-deploy.yml down
+  - run: docker-compose -f docker-compose-deploy.yml up
+6. Test in browser 127.0.0.1:8000/api/docs > swagger
+7. change port back to 80 in docker-compose-deploy
+8. Commit and push to git
 
 
 
@@ -1608,6 +1611,7 @@ Error: run.sh not found in PATH (this was a typo in ENV PATH in docker file)
 - IF NEED TO REBUILD DUE TO dockerfile error:
       - docker compose -f docker-compose-deploy.yml up --build
 
+- recommended to delete and rebuild images: app and proxy
 
 * How to validate the run.sh file inside the container
 
