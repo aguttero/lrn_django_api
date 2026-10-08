@@ -1557,6 +1557,45 @@ https://www.youtube.com/watch?v=IoxHUrbiqUo
 - CD to proxy
 - docker build . (. local dir)
 
+### Env Variables configuration
+#### Plan
+- store config in a file
+- Retrieve values with docker compose
+- Assign/pass to applications
+
+#### implementation
+* .env file
+  - DB_NAME=dbname
+* docker-compose.yml
+  environment:
+    - DB_HOST=db
+    - DB_NAME=${DB_NAME}
+    - DB_USER=${DB_USER}
+* retrirve from python:
+  import OS
+  MY_CONFIG = os.environ.get("MY_CONFIG")
+
+### Docker compose and .env for deployment s143
+1. create docker-compose-deploy.yml in project root folder
+- restart: always  (if app crashes it restarts automatically by docker)
+- proxy: reverse proxy server
+  - context ./proxy (to use /proxy folder to build the image)
+  - ports: 80(local machine>server):8000(host, inside container)
+  - volumes: static-data: is a shared volume for app and proxy (is accessible to both)
+2. create .env.sample in project root folder
+  - list all variables needed to run service with temp test value. Change once deploy to server
+  - template to use in server so don't need to manually type it in AWS deployment
+3. Update app/app/settings.py to use .env values instead of hardcoded ones
+  - SECRET_KEY - delete existing one =os.environ.get('SECRET_KEY', 'changeme')
+  - toggle DEBUG mode (True in local dev, False when we deploy to prod)
+    - DEBUG = bool(int(os.environ.get('DEBUG', 0))) (sets in env var 'DEBUG' 1:True 0:False)
+  - ALLOWED_HOSTS = [] > Security, only allows access to specific hostnames
+    - set comma separated list of hostnames
+    - add below: ALLOWED_HOSTS.extend(filter(None,os.environ.get('ALLOWED_HOSTS', '').split(','),))
+  4. Update docker-compose.yml (dev compose) services>app>environment> - DEBUG=1
+  5. Run prod app in local machine to test it (simulation before actual deployment)
+    - copy .env.sample to project_root .env (ignored bi .gitignore)
+    - change port 80 to 8000 in docker-compose-deploy (my local machine proably uses 80 for something else)
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
