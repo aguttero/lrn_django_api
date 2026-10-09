@@ -1604,8 +1604,6 @@ https://www.youtube.com/watch?v=IoxHUrbiqUo
 7. change port back to 80 in docker-compose-deploy
 8. Commit and push to git
 
-
-
 #### Debugging: 
 Error: run.sh not found in PATH (this was a typo in ENV PATH in docker file)
 - IF NEED TO REBUILD DUE TO dockerfile error:
@@ -1634,7 +1632,6 @@ ls -la /scripts/run.sh
 • Verify existence: Ensure the path matches exactly.
 • Verify permissions: The output should show executable permissions (e.g., -rwxr-xr-x). If it doesn't, you need to add RUN chmod +x /scripts/run.sh into your Dockerfile.
 
-
 3. Check for Line Endings (CRLF vs LF)
 
 A very common hidden error—especially if you edit files on Windows—is line ending mismatches. Windows saves files with CRLF (\r\n), but Linux expects LF (\n). If run.sh contains Windows line endings, Linux will look for an interpreter named bash\r and fail with a misleading "file not found" error.
@@ -1643,6 +1640,200 @@ To check this inside the container, run:
 cat -v /scripts/run.sh
 ```
 If you see ^M at the end of every line, your file has Windows line endings. You will need to fix this in your text editor on your host machine (switch line endings from CRLF to LF) and rebuild again.
+
+## AWS Deploy
+### AWS Virtual Server Tasks
+1. Create AWS account and user
+2. Login to AWS console
+3. Create a new vitual server
+4. optional calculate cost [] with aws calculator - estimated USD 9/month
+5. Connect to server via SSH
+  - install apps, download and run code
+6. in windows install SSH tool (Mac brings it by default)
+  - Chocolatey (package manager) / Run choco install openssh
+
+### Create AWS account s146
+1. aws.com / create account
+2. save root user safely
+3. Create an IAM user with less privileges for dev-ops // IAM = Identity Access Manager
+4. MFA for root user 2026 > Profile > Security > MFA > Register MFA device
+
+
+
+#### IAM access 2026 Gemini
+To configure IAM user that can log into the console and set up a virtual server running Docker:
+Select the AWS managed policy named AmazonEC2FullAccess.
+
+Because Docker runs inside a virtual server—which AWS calls an Amazon EC2 instance—the user needs permissions to provision and manage those servers. [2] 
+
+##### Recommended IAM Configuration
+When setting up this user in the [AWS IAM Console](https://console.aws.amazon.com/iam/), you should attach the following policies depending on how strictly you want to limit their access:
+
+* AmazonEC2FullAccess (Recommended): This gives the user full permission to launch, stop, and terminate EC2 virtual servers, create Key Pairs for SSH access, and configure Security Groups (firewall rules) to allow traffic to your Docker containers.
+
+* PowerUserAccess (Alternative): If this user will also need to use other container services like Amazon Elastic Container Service (ECS) or Amazon Elastic Container Registry (ECR) to store Docker images, PowerUserAccess allows full database, compute, and container application development permissions without allowing full account administration. [3] 
+
+##### Mandatory Console Access Setup
+When creating the user, ensure you check the box to "Provide user access to the AWS Management Console". You can then choose to auto-generate a password or assign a custom password for their initial login. [4, 5] 
+##### Essential Step After Launching the Server
+The IAM policy only grants access to control the AWS environment itself. Once the user launches an EC2 instance using the console, they will need to connect to the server's operating system via SSH or [AWS EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-configure-IAM-role.html) to actually run the shell commands to install and configure Docker: [1, 2, 6] 
+
+```bash
+# Example commands the user will run inside the server terminal:
+sudo apt-get update
+sudo apt-get install docker.io -y
+sudo systemctl start docker
+```
+
+##### Doc references
+[1] [https://docs.aws.amazon.com](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-policies-ec2-console.html)
+[2] [https://docs.aws.amazon.com](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-configure-IAM-role.html)
+[4] [https://docs.aws.amazon.com](https://docs.aws.amazon.com/IAM/latest/UserGuide/console_controlling-access.html)
+[6] [https://docs.aws.amazon.com](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_controlling.html)
+
+
+### Create SSH Keys
+In local device
+1. cd ~/
+2. if not .ssh dir generate a key:
+  - bash: ssh-keygen -t ed25519 -C "machinename" or "your_email@example.com" this last is the label
+  - ZAG: ed25519 is the industry standard algorithm for security and speed
+  - enter file where to save key: ~/.ssh/id_ed25519
+  - enter password twice (empty for no password) 
+3. copy key: bash: pbcopy ~/.ssh/id_ed25519.pub
+4. Other option create a rsa algorithm key:
+  - bash: ssh-keygen -t rsa -b 4096 > creates id_rsa and id_rsa.pub files
+5. Cat to display and copy .pub content
+6. in AWS Console - Search EC2 to go to EC2 Dashboard > Key Pairs > actions > import key pair
+  - name: aguttero 2026 imac
+  - paste content of public key
+  - click: import key pair
+7. validate keys are in ~/.ssh and store aws_rsa keys in there 
+
+ZAG PENDING: 
+review steps in AI Engineer Production s23 + MFA
+- MFA
+- Cost Monitoring
+
+
+### Configure EC2 instance s148
+1. EC2 Dashboard > Launch instance
+  - name: recipe-api-dev-server / Number of instances: 1 (charges $ associated)
+  - choose AMI: aws linux 2 AMI HVM - Kernel 5.10, SSD Volume type // 
+  - 2026- Linux 20203 AMI VHM - Kernel 6.18
+  - Instance type: (size) 2022 t2.micro // 2026 t3.micro
+  - Choose Key Pair
+  - Network Settings
+    - We'll create a new security group called 'launch-wizard-1' with the following rules:
+    - Allow SSH traffic from anywhere (can be restricted to specific IP)
+    - Allow HTTP traffic from internet
+  - Configure Storage
+    - 2022: min 8GB Gp2 // 2026: min 8GB gp3 (gp3 should be cheaper than gp2) gp3 $0.08 GB/month
+    - ZAG: Validate how much space do you need for your server and how to scale it and speed. (IOPS and MB/s)
+    - ZAG: Valdiate backup / File System / Advanced details
+  - click: Launch instance
+  - Validate in EC2 dashboard > Instances - running instance
+  - click instance id > Public IP
+  - copy public IP address
+2. Connect:
+  - cd ~/.ssh
+  - bash: ssh-add aws_id_rsa + password > Identity added...
+  - bash ssh ec2-user@<paste aws ec2 instance ip>
+  - Are you sure want to connecting: yes
+  - should see Amazon Linux console propt and welcome image
+
+### Set Deploy Key s149 - Approve server to pull code from GitHub
+1. Generate ssh key in EC2 instance
+  - bash: ssh-keygen -t ed25519 -b 4096
+  - leave pass blank
+  - bash: cat ~/.ssh/id_ed25519.pub
+  - copy content
+2. Github > Project > Settings > Deploy Keys > add deply key
+  - Title: server
+  - Key: paste .pub key value
+  - Don't need to allow write access (we only need to pull code from the server)
+  - add key
+  ZAG: Validate fine grain security > GitHub Apps
+  
+### Setup server dependencies
+There is a cheat sheet in
+https://github.com/LondonAppDeveloper/build-a-backend-rest-api-with-python-django-advanced-resources/blob/main/deployment.md#install-and-configure-depdencies
+1. Install git: sudo yum install git -y (yum package manager)
+2. install docker + permissions (see cheatsheet)as permissions changed need to logout (bash: exit) and ssh back again
+3. bash: exit (logout)
+4. bash: ssh ec2-user@<paste aws ec2 instance ip> (connect again)
+5. install docker compose (see cheatsheet)
+6. clone git project - Copy SSH url for the code clone / say yes to continue connecting
+7. Validate clone ok with ls - should see lrn_django_api
+8. git pull origin to pull updates
+9. Copy .env.sample to .env > bash: cp .env.sample .env 
+10. edit .env with vi or with nano
+  - DB_NAME=recipedb
+  - DB_USER=recipeuser
+  - DB_PASS=securepassword (generate random pwd)
+  - DJANGO_SEC_KY=(generate random key)
+  - DJANGO_ALL_HOST= <host name of ec2 instance> Networking > Public IPv4 DNS
+11. save ctrl+x > y // cat .env to validate
+
+##### Generate random passwords from terminal:
+###### POSTGRES
+1. USE OPENSSL
+* What it does: Generates a highly secure, 44-character random string.
+* Why it's best for .env: The -base64 flag ensures the output uses standard letters, numbers, and basic symbols (+, /, =) that won't break your .env parsing rules or require complex URL encoding.
+bash: openssl rand -base64 32
+
+2. Using LC_ALL=C tr (Alphanumeric Only)
+* If you want to completely avoid special characters (like / or $) that can sometimes cause parsing syntax errors in specific programming languages or Docker frameworks, run this:
+bash: LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32; echo
+* What it does: Pulls raw random data from your system's hardware entropy pool (/dev/urandom) and filters it down to a clean, 32-character alphanumeric password.
+
+3. Crucial PostgreSQL .env Rules:
+
+* Avoid the # Character: 
+If your generated password accidentally includes a # symbol, some framework .env loaders will interpret everything after it as a code comment, cutting your password in half and causing "Access Denied" database errors. If you see a #, just run the generator command again.
+
+*  Special Characters in Connection Strings: 
+If your Docker container connects to Postgres using a full connection URI (e.g., postgresql://user:password@localhost:5432/db), certain characters like @, :, or / in your password must be URL-encoded (e.g., @ becomes %40). Method 2 above completely bypasses this headache.
+
+###### DJANGO
+For a Django SECRET_KEY, you need a cryptographically secure string that is completely unpredictable and at least 50 characters long.
+Django secret key can safely contain a dense mix of alphanumeric characters and special symbols. In fact, Django's native key generator explicitly utilizes a specific set of 50 punctuation and alphanumeric characters (abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)).
+
+1. Method 1: The Native Django Way (Recommended)
+If you already have Django installed in your environment or Docker container, you can leverage Django's built-in utility. Run this single command:
+bash: 
+python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+
+2. Method 2: Python Standard Library (No Django Required)
+If you are setting up your .env file before configuring your Python environment or building your Docker image, you can use Python's built-in secrets module (available by default in Python 3.6+):
+bash: 
+python3 -c "import secrets; chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)' ; print(''.join(secrets.choice(chars) for _ in range(50)))"
+
+3. Method 3: Pure Shell Command (Fastest)
+If you don't want to use Python at all, you can pull highly secure, random data directly from your system's hardware pool (/dev/urandom) using this command on your Mac or EC2 instance:
+bash: 
+LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c 50; echo
+
+
+#### cheatsheet commands:
+* Install Git:
+sudo yum install git -y
+
+* Install Docker, make it auto start and give ec2-user permissions to use it:
+sudo amazon-linux-extras install docker -y or sudo yum install docker -y
+sudo systemctl enable docker.service (enables docker servies on the system)
+sudo systemctl start docker.service (docker info to see docker version doccker --help)
+sudo usermod -aG docker ec2-user (gives ec2-user permission to run docker containers)
+
+* Install Docker Compose:
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose (installs docker compose)
+sudo chmod +x /usr/local/bin/docker-compose (gives permission to execute the command)
+
+* Use Git to clone your project:
+git clone <project ssh url>
+
+### run server s152
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
