@@ -1846,7 +1846,13 @@ sudo chmod +x /usr/local/bin/docker-compose (gives permission to execute the com
 * Use Git to clone your project:
 git clone <project ssh url>
 
-### run server s152
+### run server s152 in ec2 server ssh
+1. start docker compose
+sh: docker-compose -f docker-compose-deploy.yml up -d (-d detach)
+
+#### debug error loading Python lib
+* seems to be dependency issue from linux 2 AMI to Linux 2023 AMI
+- 2023: install: libxcrypt-compat on the server, using: sudo yum install libxcrypt-compat
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
