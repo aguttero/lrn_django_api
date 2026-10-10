@@ -1742,6 +1742,18 @@ review steps in AI Engineer Production s23 + MFA
   - Are you sure want to connecting: yes
   - should see Amazon Linux console propt and welcome image
 
+#### add key for second device access to server
+1. Generate and copy new SSH key pair
+2. Connect to EC2 server from first device
+  - ssh ec2-user@<paste aws ec2 instance ip>
+3. Add pub key to authorized_keys file
+  - bash: nano ~/.ssh/authorized_keys
+  - go to end of file
+  - create new line and paste pub key
+4. Test from second device: 
+  - bash: ssh-add aws_id_rsa + password > Identity added...
+  - bash ssh ec2-user@<paste aws ec2 instance ip>
+
 ### Set Deploy Key s149 - Approve server to pull code from GitHub
 1. Generate ssh key in EC2 instance
   - bash: ssh-keygen -t ed25519 -b 4096
