@@ -1716,7 +1716,7 @@ review steps in AI Engineer Production s23 + MFA
 - Cost Monitoring
 
 
-### Configure EC2 instance s148
+### Configure and connect to EC2 instance s148
 1. EC2 Dashboard > Launch instance
   - name: recipe-api-dev-server / Number of instances: 1 (charges $ associated)
   - choose AMI: aws linux 2 AMI HVM - Kernel 5.10, SSD Volume type // 
@@ -1742,7 +1742,7 @@ review steps in AI Engineer Production s23 + MFA
   - Are you sure want to connecting: yes
   - should see Amazon Linux console propt and welcome image
 
-#### add key for second device access to server
+#### add key for second device access to server and connect
 1. Generate and copy new SSH key pair
 2. Connect to EC2 server from first device
   - ssh ec2-user@<paste aws ec2 instance ip>
@@ -1753,6 +1753,7 @@ review steps in AI Engineer Production s23 + MFA
 4. Test from second device: 
   - bash: ssh-add aws_id_rsa + password > Identity added...
   - bash ssh ec2-user@<paste aws ec2 instance ip>
+  - yes
 
 ### Set Deploy Key s149 - Approve server to pull code from GitHub
 1. Generate ssh key in EC2 instance
