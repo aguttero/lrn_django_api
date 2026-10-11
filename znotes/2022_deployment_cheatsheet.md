@@ -53,7 +53,6 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 
 ### Cloning Code
-
 Use Git to clone your project:
 
 ```sh
@@ -64,15 +63,18 @@ Note: Ensure you create an `.env` file before starting the service.
 
 
 ### Running Service
-
 To start the service, run:
-
 ```sh
 docker-compose -f docker-compose-deploy.yml up -d
 ```
 
-### Stopping Service
 
+### Create django admin super user
+```sh
+docker-compose -f docker-compose-deploy.yml run --rm app sh -c "python manage.py createsuperuser"
+```
+
+### Stopping Service
 To stop the service, run:
 
 ```sh
@@ -87,7 +89,6 @@ docker-compose -f docker-compose-deploy.yml down --volumes
 
 
 ### Viewing Logs
-
 To view container logs, run:
 
 ```sh
@@ -98,7 +99,6 @@ Add the `-f` to the end of the command to follow the log output as they come in.
 
 
 ### Updating App
-
 If you push new versions, pull new changes to the server by running the following command:
 
 ```

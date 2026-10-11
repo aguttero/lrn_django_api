@@ -1720,7 +1720,7 @@ review steps in AI Engineer Production s23 + MFA
 1. EC2 Dashboard > Launch instance
   - name: recipe-api-dev-server / Number of instances: 1 (charges $ associated)
   - choose AMI: aws linux 2 AMI HVM - Kernel 5.10, SSD Volume type // 
-  - 2026- Linux 20203 AMI VHM - Kernel 6.18
+  - 2026- Linux 2023 AMI VHM - Kernel 6.18
   - Instance type: (size) 2022 t2.micro // 2026 t3.micro
   - Choose Key Pair
   - Network Settings
@@ -1733,12 +1733,12 @@ review steps in AI Engineer Production s23 + MFA
     - ZAG: Valdiate backup / File System / Advanced details
   - click: Launch instance
   - Validate in EC2 dashboard > Instances - running instance
-  - click instance id > Public IP
+  - click instance id > Public IPv4
   - copy public IP address
 2. Connect:
   - cd ~/.ssh
   - bash: ssh-add aws_id_rsa + password > Identity added...
-  - bash ssh ec2-user@<paste aws ec2 instance ip>
+  - bash ssh ec2-user@<paste aws ec2 instance Public IPv4>
   - Are you sure want to connecting: yes
   - should see Amazon Linux console propt and welcome image
 
@@ -1787,6 +1787,7 @@ https://github.com/LondonAppDeveloper/build-a-backend-rest-api-with-python-djang
   - DJANGO_SEC_KY=(generate random key)
   - DJANGO_ALL_HOST= <host name of ec2 instance> Networking > Public IPv4 DNS
 11. save ctrl+x > y // cat .env to validate
+12. 2026 need to install: sudo yum install -y libxcrypt-compat (-y yes, optional)
 
 ##### Generate random passwords from terminal:
 ###### POSTGRES
@@ -1848,11 +1849,18 @@ git clone <project ssh url>
 
 ### run server s152 in ec2 server ssh
 1. start docker compose
+2. CD ~/lrn_django_api
 sh: docker-compose -f docker-compose-deploy.yml up -d (-d detach)
+3. validate by consolo output
+4. validate by accessing public DNS IPv4 address under 'network' in Ec2 instance info dashboard
+5. Create django-admin user
+  - sh: docker-compose -f docker-compose-deploy.yml run --rm app sh -c "python manage.py createsuperuser"
+6. see logs: sh: docker-compose -f docker-compose-deploy.yml logs
 
 #### debug error loading Python lib
 * seems to be dependency issue from linux 2 AMI to Linux 2023 AMI
-- 2023: install: libxcrypt-compat on the server, using: sudo yum install libxcrypt-compat
+- 2023: install: libxcrypt-compat on the server, using: 
+- sh: sudo yum install -y libxcrypt-compat (-y means 'yes' it is optional)
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
