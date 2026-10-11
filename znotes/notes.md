@@ -1862,5 +1862,33 @@ sh: docker-compose -f docker-compose-deploy.yml up -d (-d detach)
 - 2023: install: libxcrypt-compat on the server, using: 
 - sh: sudo yum install -y libxcrypt-compat (-y means 'yes' it is optional)
 
+### update code flow s153
+* task: add healt check api
+1. TDD app/core/tests/test_health_check.py
+2. crate app/core/views.py
+  - uses @api_view decorator -> To build very simple api
+  - from rest_framework.decorators import api_view
+  - @api_view(['GET'])
+    def health_check(request):
+    """Returns successful response."""
+    return Response({'healthy': True})
+3. edit root urls: app/app/urls.py
+  - from core import views as core_views
+  - add path('api/health-check/', core_views.health_check, name='health-check')
+4. Test ok
+5. Git Push
+#### Serverver side update
+6. Connect to ec2 > ssh ec2-user@ip
+7. CD to project folder lrn_django_api
+8. git pull origin
+9. DONT STOP docker compose > docker compose down
+10. Rebuild app server image:
+  - docker-compose -f docker-compose-deploy.yml build app
+11. Restart django app without restarting the dependencies (db, proxy) --nodeps
+  - docker-compose -f docker-compose-deploy.yml up --no-deps -d app
+12. Validate that image builds ok
+13. Validate update is applied
+
+
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
