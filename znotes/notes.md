@@ -1927,16 +1927,28 @@ flake8>=4.0.1,<4.1
 4. docker compose up and test local host / django-admin --version
 5. push changes to github
 6. run upgrade process 
-  Connect to ec2 > ssh ec2-user@ip
-  CD to project folder lrn_django_api
+  * Connect to ec2 > ssh ec2-user@ip
+  * CD to project folder lrn_django_api
   git pull origin
-  DONT STOP docker compose > docker compose down
-  Rebuild app server image:
-    - docker-compose -f docker-compose-deploy.yml build app
-  Recreate and restart django app without restarting the dependencies (db, proxy) --nodeps
-    - docker-compose -f docker-compose-deploy.yml up --no-deps -d app
-  Validate that image builds ok
-  Validate update is applied
+  * DONT STOP docker compose > docker compose down
+  *Rebuild app server image:
+    - sh: docker-compose -f docker-compose-deploy.yml build app
+  * Recreate and restart django app without restarting the dependencies (db, proxy) --nodeps
+    - sh: docker-compose -f docker-compose-deploy.yml up --no-deps -d app
+  * Validate that image builds ok
+  * Validate update is applied
+
+#### Validate vesions in EC2 SSH Console
+1. validate running containers: sh: docker ps or docker container ls
+2. Run 'exec' in the docker container
+  - sh: docker exec -it <container_id_or_name> python manage.py --version
+  - ZAG: 3.2.25 pre update
+  - ZAG: 4.0.10 post update
+
+2. Alternative: check via docker compose
+  - cd to folder where docker-compose-deploy.yml is located
+  - sh: docker compose -f docker-compose-deploy exec 'servicename' python manage.py --version
+
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
