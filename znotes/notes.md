@@ -1884,11 +1884,59 @@ sh: docker-compose -f docker-compose-deploy.yml up -d (-d detach)
 9. DONT STOP docker compose > docker compose down
 10. Rebuild app server image:
   - docker-compose -f docker-compose-deploy.yml build app
-11. Restart django app without restarting the dependencies (db, proxy) --nodeps
+11. Recreate and restart django app without restarting the dependencies (db, proxy) --nodeps
   - docker-compose -f docker-compose-deploy.yml up --no-deps -d app
 12. Validate that image builds ok
 13. Validate update is applied
 
+### package updgrade django v3 to v4
+Check in pypi latest version available of each package (and support?)
+https://pypi.org/
+
+#### initial course versions:
+* requirements.txt
+Django>=3.2.4,<3.3
+djangorestframework>=3.12.4,<3.13
+psycopg2>=2.8.6,<2.9
+drf-spectacular>=0.15.1,<0.16
+Pillow>=8.2.0,<8.3.0
+uwsgi>=2.0.19,<2.1
+
+* requirements.dev.txt
+flake8>=3.9.2,<3.10
+
+#### updated 2025 versions:
+* requirements.txt
+Django>=4.0.4,<4.1
+djangorestframework>=3.13.1,<3.14
+psycopg2>=2.9.3,<2.10
+drf-spectacular>=0.22.1,<0.23
+Pillow>=9.1.0,<9.2
+uwsgi>=2.0.20,<2.1
+
+* requirements.dev.txt
+flake8>=4.0.1,<4.1
+
+#### 2026 10 versions:
+
+#### Upgrade process:
+1. edit project/requirements.txt and requirements.dev.txt
+2. local bash: docker compose build
+3. test wait for db and test and flake
+  - bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test && flake8"
+4. docker compose up and test local host / django-admin --version
+5. push changes to github
+6. run upgrade process 
+  Connect to ec2 > ssh ec2-user@ip
+  CD to project folder lrn_django_api
+  git pull origin
+  DONT STOP docker compose > docker compose down
+  Rebuild app server image:
+    - docker-compose -f docker-compose-deploy.yml build app
+  Recreate and restart django app without restarting the dependencies (db, proxy) --nodeps
+    - docker-compose -f docker-compose-deploy.yml up --no-deps -d app
+  Validate that image builds ok
+  Validate update is applied
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
