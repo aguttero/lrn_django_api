@@ -1980,6 +1980,12 @@ Note: Avoid clicking "Terminate", as this will permanently delete the instance a
   - sh: systemctl is-enabled docker.service
 * To stop docker service auto start:
   - sh: sudo systemctl disable docker
+* 
+How to Control Docker Manually Moving Forward
+
+Once disabled, you will use these commands to control the service when you are coding:
+• Start Docker: sudo systemctl start docker
+• Stop Docker: sudo systemctl stop docker
 ZAG: look for systemctl commands in cheat sheet
 
 ### start dev server
