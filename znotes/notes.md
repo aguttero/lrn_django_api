@@ -1949,6 +1949,66 @@ flake8>=4.0.1,<4.1
   - cd to folder where docker-compose-deploy.yml is located
   - sh: docker compose -f docker-compose-deploy exec 'servicename' python manage.py --version
 
+### Stop (pause) EC2 instance
+*  Option 1: Using the AWS Management Console (Easiest)
+0. Stop with doker compose down from SSH console
+  - sh: docker-compose -f docker-compose-deploy.yml down
+  - Stop and delete all data:
+  - sh: docker-compose -f docker-compose-deploy.yml down --volumes
+1. Open the AWS EC2 Console.
+2. Click on Instances in the left-hand menu.
+3. Check the box next to your Django EC2 instance.
+4. Click the Instance state button at the top.
+5. Select Stop instance from the dropdown menu.
+Note: Avoid clicking "Terminate", as this will permanently delete the instance and all of your Django progress.
+
+* option 2: using AWS CLI
+0. stop with docker compose down from SSH console 
+1. stop with AWS CLI:
+- sh: aws ec2 stop-instances --instance-ids YOUR_INSTANCE_ID
+
+### Re Start Instance (after stop)
+1. click instances > select instance > Instance state > Start instance
+2. Public IP will change
+ - use new ip to SSH to ec2
+ - need to udpate ALLOWED_HOSTS in .env file
+3. Start Docker compose: sh: docker-compose -f docker-compose-deploy.yml up -d
+
+#### Docker service auto loads when server reboots
+* Check if Docker is set to start automatically: sh ec2:
+  - sh: systemctl is-enabled docker
+  - sh: systemctl is-enabled docker.service
+* To stop docker service auto start:
+  - sh: sudo systemctl disable docker
+ZAG: look for systemctl commands in cheat sheet
+
+### start dev server
+
+### ZAG pending
+1. how to start dev server - how to avoid dev server start to crash prod server. (does not alter volumes :-) 
+2. how to clean unused images in server
+2. fix -5 and strange integer in schema
+2. https
+3. custom dns / permanent ip (elastic IP)
+4. how to serve a frontend
+5. security (firewall, DDS, password hacking)
+6. Redundancy
+7. Backup and restore
+8. Monitoring
+9. Resource report (CPU, Storage, Mem)
+10. Peak usage resource report
+11. How to scale the instance
+12. How to calculate amount of concurrent users supported
+
+### Bank statement project
+1. Update Ec2 instance to current latest versions (docker, python, postgres, nginx, django, and dependencies)
+2. Build front end
+3. Add missing logic and processes
+4. Automate intance up & down service 
+
+
+Upgrade to 2026 current latests versions of django, python and postgres
+
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
