@@ -1781,13 +1781,24 @@ https://github.com/LondonAppDeveloper/build-a-backend-rest-api-with-python-djang
 8. git pull origin to pull updates
 9. Copy .env.sample to .env > bash: cp .env.sample .env 
 10. edit .env with vi or with nano
+  - DB_HOST (don't add this line in .env. this value is pulled automatically from name in compose-deploy.yml file service name)
   - DB_NAME=recipedb
   - DB_USER=recipeuser
   - DB_PASS=securepassword (generate random pwd)
-  - DJANGO_SEC_KY=(generate random key)
+  - DJANGO_SEC_KEY=(generate random key)
   - DJANGO_ALL_HOST= <host name of ec2 instance> Networking > Public IPv4 DNS
 11. save ctrl+x > y // cat .env to validate
 12. 2026 need to install: sudo yum install -y libxcrypt-compat (-y yes, optional)
+13. Validate os env values: 
+  * Docker
+  - Linux server: sh printenv
+  -  Docker: sh: docker exec -it <id_or_container_name> printenv
+  - to start a new docker only to see env vars docker run --rm <nombre_de_la_imagen> printenv
+
+  * Docker Compose [not working]
+  - sh: docker compose exec <nombre_del_servicio> printenv
+  - un docker compose no iniciado sh: docker compose run --rm <nombre_del_servicio> printenv
+
 
 ##### Generate random passwords from terminal:
 ###### POSTGRES
@@ -1938,7 +1949,7 @@ flake8>=4.0.1,<4.1
   * Validate that image builds ok
   * Validate update is applied
 
-#### Validate vesions in EC2 SSH Console
+#### Validate django vesions in EC2 SSH Console
 1. validate running containers: sh: docker ps or docker container ls
 2. Run 'exec' in the docker container
   - sh: docker exec -it <container_id_or_name> python manage.py --version
@@ -1980,9 +1991,8 @@ Note: Avoid clicking "Terminate", as this will permanently delete the instance a
   - sh: systemctl is-enabled docker.service
 * To stop docker service auto start:
   - sh: sudo systemctl disable docker
-* 
-How to Control Docker Manually Moving Forward
 
+* How to Control Docker Manually Moving Forward
 Once disabled, you will use these commands to control the service when you are coding:
 • Start Docker: sudo systemctl start docker
 • Stop Docker: sudo systemctl stop docker
@@ -2007,14 +2017,10 @@ ZAG: look for systemctl commands in cheat sheet
 12. How to calculate amount of concurrent users supported
 
 ### Bank statement project
-1. Update Ec2 instance to current latest versions (docker, python, postgres, nginx, django, and dependencies)
+1. Update Ec2 instance to current latest versions (aws linux, docker, apline, python, postgres, nginx, django, and dependencies)
 2. Build front end
 3. Add missing logic and processes
 4. Automate intance up & down service 
-
-
-Upgrade to 2026 current latests versions of django, python and postgres
-
 
 ## TLS Certificate - Let's Encrypt
 TLS requires a certificate — basically a cryptographically signed proof that "this server really is yoursite.com," issued by a trusted authority. Let's Encrypt is the free, automated service almost everyone uses now to get one. That certificate is what your browser checks before showing the padlock icon.
