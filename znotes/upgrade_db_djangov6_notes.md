@@ -71,3 +71,7 @@ Linux:
   sh: uname -a
   Amazon Linux 2023.12.20260930
 docker: sh: docker --version: 25.0.14
+
+
+## Claude Prmpt
+in your role of devops teacher to a junior developer. I need a conceptual plan and then a detailed execution check-list to migrate a kitchen recipe django rest api service which runs in docker in an aws ec2 server to the  current latests versions of django, docker,  apline linux, postgres, python, nginx proxy and python packages. The service is running over docker with django 4.0, django DRF 3.13, psycopg2 2.9, drf-spectacular 0.22, pillow 9.1, uswgi 2.0,  python 3.9-alpine3.13, postgres13.23-alpine, nginx 1.31.6, docker 25.0 and docker compose.

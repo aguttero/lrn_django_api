@@ -1873,6 +1873,12 @@ sh: docker-compose -f docker-compose-deploy.yml up -d (-d detach)
 - 2023: install: libxcrypt-compat on the server, using: 
 - sh: sudo yum install -y libxcrypt-compat (-y means 'yes' it is optional)
 
+#### debug problem v1 error log:
+detected binary path: /py/bin/uwsgi
+app_1    | !!! no internal routing support, rebuild with pcre support !!!
+
+#### debug access to ec2 aws public domain ok from brave mbrpo not ok from chrome imac
+
 ### update code flow s153
 * task: add healt check api
 1. TDD app/core/tests/test_health_check.py
@@ -1929,6 +1935,11 @@ uwsgi>=2.0.20,<2.1
 flake8>=4.0.1,<4.1
 
 #### 2026 10 versions:
+pga admin in docker:
+https://youtu.be/yh6zw4u1DgM
+
+#### update prompt to claude
+
 
 #### Upgrade process:
 1. edit project/requirements.txt and requirements.dev.txt
