@@ -1,6 +1,6 @@
 # notes in lrn_django_01 -> django_notes.md
 # to run project
-## start and stop docker container, services and network
+## DEV LOCAL: start and stop docker container, services and network
 docker compose up
 in browser: http://localhost:8000/ or 127.0.0.1:8000
 docker compose down
@@ -8,15 +8,14 @@ docker compose down
 or:
 python manage.py runserver 0.0.0.0:8000 in docker container to see initial empty django dev server home screen
 
-## Test
+### Test
 bash: docker-compose run --rm app sh -c "python manage.py test -v 2"
 
-## validate django web browser running
+### validate django web browser running
 localhost:8000/admin
 
-## API Swagger
+### API Swagger
 http://localhost:8000/api/docs
-
 
 
 # API COURSE - London App Developer -Build a backend REST API
