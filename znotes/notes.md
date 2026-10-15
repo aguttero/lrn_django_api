@@ -1878,6 +1878,34 @@ detected binary path: /py/bin/uwsgi
 app_1    | !!! no internal routing support, rebuild with pcre support !!!
 
 #### debug access to ec2 aws public domain ok from brave mbrpo not ok from chrome imac
+Possible fixes:
+* chrome forcing https
+- click the Chrome address bar, delete whatever is there, and explicitly type out the full protocol with the port, ensuring it starts with http:
+http://ec2-xx-xx-xx-xx.compute-1.amazonaws.com:8000
+- (Alternatively, try accessing it inside a Chrome Incognito Window [ + Shift + N] to bypass HSTS redirection)
+
+* chrome secure DNS interfering
+1. Open Chrome on your iMac and go to Settings.
+2. Navigate to Privacy and security > Security.
+3. Scroll down to the Advanced section.
+4. Temporarily toggle Use secure DNS to Off.
+5. Restart Chrome and try loading your AWS Public DNS again.
+
+* old dns cache on iMac
+The Fix: You need to clear the DNS cache on both Chrome and the macOS system itself.
+- Clear Chrome's DNS Cache: In Chrome's address bar, type chrome://net-internals/#dns and click the Clear host cache button.
+- Clear macOS DNS Cache: Open the Terminal app on your iMac and execute the following command to flush the system resolver:
+sh: sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+
+* MacOS Local Network Permissions
+Recent versions of macOS require browsers to have permission to scan and communicate with networks. If Chrome was ever restricted from local network discovery or behaves oddly on that specific iMac profile, traffic can become isolated.
+• The Fix: On your iMac, go to System Settings > Privacy & Security > Local Network, and ensure the toggle for Google Chrome is turned On.
+
+*  🔍 Quick Test to Pinpoint the Problem
+To instantly figure out if the problem is Chrome or the iMac itself, try opening Safari on your iMac and pasting the address (http://<your-aws-public-dns>:8000).
+• If Safari works, the problem is 100% Chrome's cache or HTTPS routing.
+• If Safari also fails, the problem is your iMac's network connection, a local firewall, or its network DNS settings.
+
 
 ### update code flow s153
 * task: add healt check api
