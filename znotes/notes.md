@@ -457,7 +457,7 @@ bash: docker-compose run --rm app sh -c "python manage.py wait_for_db && flake8"
 bash: flake8 .
 2026 Modern Tool -> Ruff (does not have dependencies)
 ZAG -> Validate how to setup RUFF instead of flake8 for alpine
-### RUFF Setup
+### RUFF Setup (Gemini)
 *setup
   - pip install ruff
   - ruff check .
