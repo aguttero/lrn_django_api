@@ -1906,6 +1906,12 @@ To instantly figure out if the problem is Chrome or the iMac itself, try opening
 • If Safari works, the problem is 100% Chrome's cache or HTTPS routing.
 • If Safari also fails, the problem is your iMac's network connection, a local firewall, or its network DNS settings.
 
+Let me know:
+• What error message does Chrome give you? (e.g., ERR_CONNECTION_TIMED_OUT, ERR_CONNECTION_REFUSED, or ERR_SSL_PROTOCOL_ERROR?)
+• Does it work on your iMac if you use the raw Public IPv4 address instead of the long Public DNS string?
+
+
+
 
 ### update code flow s153
 * task: add healt check api
